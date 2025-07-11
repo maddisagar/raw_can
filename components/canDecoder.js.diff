@@ -1,0 +1,126 @@
+* Decode functions for signals in DT007_B001_Status message.
+ * These are simple boolean or uint8 decodes as per dbc.
+ */
+function decodeBoolean(value) {
+  return value !== 0;
+}
+
+=======
+/**
+ * Decode functions for signals in DT007_B001_Status message.
+ * These are simple boolean or uint8 decodes as per dbc.
+ */
+function decodeBoolean(value) {
+  return value !== 0;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+>>>>>>> REPLACE
+
+<<<<<<< SEARCH
+/**
+ * Decode DT008_B002 message signals from raw data bytes.
+ * Temperatures with scale 0.1 and offset -100.
+ */
+function decodeTemperature(rawValue) {
+  return rawValue * 0.1 - 100.0;
+}
+
+function decodeDT008_B002(data) {
+  // data length 8 bytes
+  const ctrlr_temp1 = data[0] + ((data[1] & 0x0F) << 8);
+  const ctrlr_temp2 = ((data[1] >> 4) & 0x0F) + (data[2] << 4);
+  const ctrlr_temp = data[3] + ((data[4] & 0x0F) << 8);
+  const mtr_temp = ((data[4] >> 4) & 0x0F) + (data[5] << 4);
+
+  return {
+    CtrlrTemp1: decodeTemperature(ctrlr_temp1),
+    CtrlrTemp2: decodeTemperature(ctrlr_temp2),
+    CtrlrTemp: decodeTemperature(ctrlr_temp),
+    MtrTemp: decodeTemperature(mtr_temp),
+  };
+}
+=======
+/**
+ * Decode DT008_B002 message signals from raw data bytes.
+ * Temperatures with scale 0.1 and offset -100.
+ */
+function decodeTemperature(rawValue) {
+  return rawValue * 0.1 - 100.0;
+}
+
+function decodeDT008_B002(data) {
+  // data length 8 bytes
+  const ctrlr_temp1 = data[0] + ((data[1] & 0x0F) << 8);
+  const ctrlr_temp2 = ((data[1] >> 4) & 0x0F) + (data[2] << 4);
+  const ctrlr_temp = data[3] + ((data[4] & 0x0F) << 8);
+  const mtr_temp = ((data[4] >> 4) & 0x0F) + (data[5] << 4);
+
+  const decodedCtrlrTemp1 = decodeTemperature(ctrlr_temp1);
+  const decodedCtrlrTemp2 = decodeTemperature(ctrlr_temp2);
+  const decodedCtrlrTemp = decodeTemperature(ctrlr_temp);
+  const decodedMtrTemp = decodeTemperature(mtr_temp);
+
+  return {
+    CtrlrTemp1: decodedCtrlrTemp1,
+    CtrlrTemp2: decodedCtrlrTemp2,
+    CtrlrTemp: decodedCtrlrTemp,
+    MtrTemp: decodedMtrTemp,
+    MtrTempClamped: clamp(decodedMtrTemp, -100, 300),
+  };
+}
+>>>>>>> REPLACE
+
+<<<<<<< SEARCH
+/**
+ * Decode DT009_B003 message signals from raw data bytes.
+ * Signals with scale and offset as per dbc.
+ */
+function decodeDT009_B003(data) {
+  // data length 8 bytes
+  const ac_curr_mea_rms = data[0] + ((data[1] & 0x1F) << 8);
+  const dc_curr_estd = ((data[1] >> 5) & 0x07) + (data[2] << 3) + ((data[3] & 0x03) << 11);
+  const dc_bus_volt = ((data[3] >> 2) & 0x3F) + ((data[4] & 0x0F) << 6);
+  const mtr_spd = ((data[4] >> 4) & 0x0F) + (data[5] << 4) + ((data[6] & 0x3F) << 12);
+  const throt_volt = ((data[6] >> 6) & 0x03) + (data[7] << 2);
+
+  return {
+    AcCurrMeaRms: ac_curr_mea_rms * 0.1,
+    DcCurrEstd: dc_curr_estd * 0.1 - 300.0,
+    DcBusVolt: dc_bus_volt * 0.1,
+    MtrSpd: mtr_spd * 0.1 - 12000.0,
+    ThrotVolt: throt_volt * 0.01,
+  };
+}
+=======
+/**
+ * Decode DT009_B003 message signals from raw data bytes.
+ * Signals with scale and offset as per dbc.
+ */
+function decodeDT009_B003(data) {
+  // data length 8 bytes
+  const ac_curr_mea_rms = data[0] + ((data[1] & 0x1F) << 8);
+  const dc_curr_estd = ((data[1] >> 5) & 0x07) + (data[2] << 3) + ((data[3] & 0x03) << 11);
+  const dc_bus_volt = ((data[3] >> 2) & 0x3F) + ((data[4] & 0x0F) << 6);
+  const mtr_spd = ((data[4] >> 4) & 0x0F) + (data[5] << 4) + ((data[6] & 0x3F) << 12);
+  const throt_volt = ((data[6] >> 6) & 0x03) + (data[7] << 2);
+
+  const decodedAcCurrMeaRms = ac_curr_mea_rms * 0.1;
+  const decodedDcCurrEstd = dc_curr_estd * 0.1 - 300.0;
+  const decodedDcBusVolt = dc_bus_volt * 0.1;
+  const decodedMtrSpd = mtr_spd * 0.1 - 12000.0;
+  const decodedThrotVolt = throt_volt * 0.01;
+
+  return {
+    AcCurrMeaRms: decodedAcCurrMeaRms,
+    DcCurrEstd: decodedDcCurrEstd,
+    DcBusVolt: decodedDcBusVolt,
+    MtrSpd: decodedMtrSpd,
+    ThrotVolt: decodedThrotVolt,
+    AcCurrMeaRmsClamped: clamp(decodedAcCurrMeaRms, 0, 400),
+    DcBusVoltClamped: clamp(decodedDcBusVolt, 0, 100),
+    MtrSpdClamped: clamp(decodedMtrSpd, -12000, 12000),
+  };
+}
