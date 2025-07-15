@@ -125,18 +125,6 @@ export default function PerformanceMetrics() {
         <h3>Performance Metrics</h3>
         <div className="overall-stats">
           <div className="stat-item">
-            <span className="stat-label">Efficiency</span>
-            <span
-              className={`stat-value ${efficiencyScore > 80 ? "good" : efficiencyScore > 60 ? "warning" : "critical"}`}
-            >
-              {efficiencyScore.toFixed(0)}%
-            </span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Power</span>
-            <span className="stat-value">{powerConsumption.toFixed(2)} kW</span>
-          </div>
-          <div className="stat-item">
             <span className="stat-label">Critical</span>
             {criticalCount > 0 ? (
               <span className="stat-value critical">{criticalCount}</span>
