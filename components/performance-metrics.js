@@ -73,7 +73,7 @@ export default function PerformanceMetrics() {
       trend: calculateTrend("Mtrspd", "measurement617"),
       icon: Gauge,
       color: "#8b5cf6",
-      max: 3000,
+      max: 7500,
     },
     {
       title: "DC Bus Voltage",
@@ -82,7 +82,7 @@ export default function PerformanceMetrics() {
       trend: calculateTrend("DcBusVolt", "measurement617"),
       icon: Zap,
       color: "#FFD700",
-      max: 500,
+      max: 80,
     },
     {
       title: "AC Current RMS",
@@ -91,7 +91,7 @@ export default function PerformanceMetrics() {
       trend: calculateTrend("AcCurrMeaRms", "measurement617"),
       icon: Activity,
       color: "#22c550",
-      max: 100,
+      max: 500,
     },
     {
       title: "Motor Temperature",
@@ -100,7 +100,7 @@ export default function PerformanceMetrics() {
       trend: calculateTrend("MtrTemp", "temp616"),
       icon: Gauge,
       color: "#ef4444",
-      max: 100,
+      max: 200,
     },
   ]
 
