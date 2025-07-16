@@ -364,7 +364,7 @@ export default function PerformanceMetrics() {
           }
 
           .metric-card {
-            padding: 0.5rem;
+            padding: 0rem 0.5rem;
             min-height: 180px;
             box-sizing: border-box;
           }
