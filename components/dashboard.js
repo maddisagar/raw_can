@@ -159,7 +159,7 @@ export default function Dashboard() {
         .dashboard-tabs {
           display: flex;
           gap: 1rem;
-          margin-bottom: 2.5rem;
+          margin-bottom: 1rem;
           flex-wrap: wrap;
         }
 
@@ -260,14 +260,19 @@ export default function Dashboard() {
 
         @media (max-width: 768px) {
           .dashboard-tabs {
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 0.5rem;
           }
 
           .tab-btn {
             width: 100%;
-            padding: 0.75rem 1rem;
-            font-size: 1rem;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.85rem;
+          }
+
+          .tab-btn:nth-child(1) {
+            grid-column: span 2;
           }
 
           .graph-controls {
