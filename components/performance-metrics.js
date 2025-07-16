@@ -391,12 +391,12 @@ export default function PerformanceMetrics() {
           filter: drop-shadow(0 0 0 transparent);
           cursor: default;
           font-weight: 700;
-          font-size: 26px;
+          font-size: 16px;
           background: transparent;
           border: 2px solid transparent;
           color: grey;
-          width: 32px;
-          height: 32px;
+          width: 22px;
+          height: 22px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -422,6 +422,10 @@ export default function PerformanceMetrics() {
           border-color: transparent;
           box-shadow: none;
           cursor: default;
+        }
+
+        .motor-direction-icons .darkmode .icon {
+          color: black;
         }
       `}</style>
     </div>

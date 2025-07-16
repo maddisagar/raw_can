@@ -388,14 +388,17 @@ export default function SystemAlerts() {
 
         .alert-item.critical {
           border-left-color: #ef4444;
+          background: rgba(239, 68, 68, 0.1);
         }
 
         .alert-item.warning {
           border-left-color: #f59e0b;
+          background: rgba(245, 158, 11, 0.1);
         }
 
         .alert-item.info {
           border-left-color: #22c55e;
+          background: rgba(34, 197, 94, 0.1);
         }
 
         .alert-item:hover {
