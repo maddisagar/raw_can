@@ -271,7 +271,7 @@ export default function PerformanceMetrics() {
           background: rgba(255, 255, 255, 0.03);
           border: 3px solid #C0C1EF;
           border-radius: 12px;
-          padding: 1rem 1rem 1.25rem;
+          padding: 0rem 1rem 1rem 1.25rem;
           transition: all 0.3s ease;
           display: flex;
           flex-direction: column;
