@@ -76,7 +76,7 @@ export default function PerformanceMetrics() {
   const metrics = [
     {
       title: "Motor Speed",
-      value: 300,
+      value: currentData.measurement617.MtrSpd,
       unit: "RPM",
       trend: calculateTrend("Mtrspd", "measurement617"),
       icon: Gauge,
@@ -299,7 +299,7 @@ export default function PerformanceMetrics() {
 
         .motor-speed-card .icon-group {
           justify-content: space-between;
-          width: 100px;
+          width: 80px;
         }
 
 
@@ -312,8 +312,8 @@ export default function PerformanceMetrics() {
           font-weight: 700;
           font-size: 0.75rem;
           border-radius: 4px;
-          border: 2px solid transparent;
-          padding: 0.25rem 0.4rem;
+          border: 1px solid transparent;
+          padding: 0.15rem 0.35rem;
         }
 
         .icon.active {
