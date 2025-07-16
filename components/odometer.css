@@ -1,0 +1,27 @@
+.odometer-container {
+  width: 150px;
+  height: 80px;
+  position: relative;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+
+.odometer-svg {
+  display: block;
+  margin: 0 auto;
+  width: 150px;
+  height: 80px;
+}
+
+/* Mobile view: reduce size */
+@media (max-width: 600px) {
+  .odometer-container {
+    width: 120px;
+    height: 64px;
+  }
+
+  .odometer-svg {
+    width: 120px;
+    height: 64px;
+  }
+}

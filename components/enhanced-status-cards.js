@@ -472,35 +472,36 @@ export default function EnhancedStatusCards({ showOnlyStatusGroups = false, show
         }
       }
 
-      @media (max-width: 480px) {
-        .status-groups {
-          grid-template-columns: 1fr;
-          gap: 0.75rem;
-        }
+        @media (max-width: 480px) {
+          .status-groups {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+          }
 
-        .status-group {
-          padding: 0.75rem;
-        }
+          .status-group {
+            padding: 0.5rem;
+          }
 
-        .group-header h4 {
-          font-size: 0.85rem;
-        }
+          .group-header h4 {
+            font-size: 0.85rem;
+          }
 
-        .group-items {
-          gap: 0.4rem;
-        }
+          .group-items {
+            gap: 0.4rem;
+          }
 
-        .temperature-section {
-          padding: 1rem;
-          width: 100%;
-          box-sizing: border-box;
-        }
+          .temperature-section {
+            padding: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+          }
 
-        .temp-card {
-          padding: 0.5rem 1rem;
-          font-size: 1rem;
+          .temp-card {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+          }
         }
-      }
       `}</style>
     </div>
   )

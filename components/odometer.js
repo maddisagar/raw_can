@@ -2,6 +2,7 @@
 
 import React from "react"
 import AnimatedCounter from "./animated-counter"
+import "./odometer.css"
 
 export default function Odometer({ value, max, unit, color }) {
   // Validate max and value
@@ -16,12 +17,10 @@ export default function Odometer({ value, max, unit, color }) {
   const y2 = String(70 - 65 * Math.sin(Math.PI - (angle * Math.PI) / 180))
 
   return (
-    <div style={{ width: "150px", height: "80px", position: "relative", margin: "0 auto" }}>
+    <div className="odometer-container">
       <svg
         viewBox="0 0 150 80"
-        width="150"
-        height="80"
-        style={{ display: "block", margin: "0 auto" }}
+        className="odometer-svg"
       >
         {/* Semi-circle gauge background */}
         <path

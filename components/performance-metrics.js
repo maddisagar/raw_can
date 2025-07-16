@@ -347,8 +347,15 @@ export default function PerformanceMetrics() {
         }
 
         @media (max-width: 768px) {
+          .performance-metrics {
+            max-width: 100%;
+            box-sizing: border-box;
+            padding: 1rem;
+          }
+
           .metrics-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
           }
 
           .overall-stats {
@@ -357,7 +364,9 @@ export default function PerformanceMetrics() {
           }
 
           .metric-card {
-            padding: 1rem;
+            padding: 0.5rem;
+            min-height: 180px;
+            box-sizing: border-box;
           }
         }
       `}</style>

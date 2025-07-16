@@ -210,14 +210,14 @@ export const DataProvider = ({ children }) => {
                       };
                     });
                     setHistory((prevHistory) => [...prevHistory, { ...decodedSignals, timestamp: new Date().toISOString() }]);
-                    setDisplayData(decodedSignals); // Set display data to show for 500ms
-                    // Clear display data after 500ms
+                    setDisplayData(decodedSignals); // Set display data to show for 700ms
+                    // Clear display data after 700ms
                     if (decodedDataQueueRef.displayTimeout) {
                       clearTimeout(decodedDataQueueRef.displayTimeout);
                     }
                     decodedDataQueueRef.displayTimeout = setTimeout(() => {
                       setDisplayData(null);
-                    }, 500);
+                    }, 700);
                   }
                 } else {
                   console.warn("Unknown CAN message ID, cannot decode:", message.id);
