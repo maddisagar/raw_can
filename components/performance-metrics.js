@@ -1,5 +1,6 @@
 "use client"
 
+
 import { useData } from "./data-context"
 import { TrendingUp, TrendingDown, Minus, Gauge, Zap, Activity } from "lucide-react"
 import Odometer from "./odometer"
@@ -163,21 +164,40 @@ export default function PerformanceMetrics() {
           // const percentage = (metric.value / metric.max) * 100
 
           return (
-            <div key={metric.title} className="metric-card">
+          <div key={metric.title} className={`metric-card ${metric.title === "Motor Speed" ? "motor-speed-card" : ""}`}>
               <div className="metric-header">
                 <div className="metric-icon" style={{ color: metric.color }}>
                   <IconComponent size={20} />
                 </div>
                 <div className="metric-trend" style={{ color: trendColor }}>
-                  <TrendIcon size={16} />
-                  <span>{(Math.abs(metric.trend) ?? 0).toFixed(1)}%</span>
+                  {/* Removed trend icon and percentage display as per user request */}
                 </div>
+                {metric.title === "Motor Speed" && (
+                  <div className="motor-direction-icons">
+                    <button
+                      className={`icon forward-icon letter-button ${metric.value > 0 ? "active" : "inactive"}`}
+                      title="Forward"
+                      aria-label="Forward"
+                      type="button"
+                    >
+                      F
+                    </button>
+                    <button
+                      className={`icon reverse-icon letter-button ${metric.value < 0 ? "active" : "inactive"}`}
+                      title="Reverse"
+                      aria-label="Reverse"
+                      type="button"
+                    >
+                      R
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="metric-content">
                 <h4>{metric.title}</h4>
                 <div className="metric-value">
-                  <span className="value">{(metric.value ?? 0).toFixed(1)}</span>
+                  <span className="value">{metric.title === "Motor Speed" ? Math.abs(metric.value ?? 0).toFixed(1) : (metric.value ?? 0).toFixed(1)}</span>
                   <span className="unit">{metric.unit}</span>
                 </div>
 
@@ -347,6 +367,61 @@ export default function PerformanceMetrics() {
           .metrics-grid {
             grid-template-columns: 1fr;
           }
+        }
+      `}</style>
+
+      <style jsx>{`
+        .motor-direction-icons {
+          position: absolute;
+          top: 0.5rem;
+          right: 0.5rem;
+          display: flex;
+          gap: 0.5rem;
+          z-index: 10;
+          color: grey;
+        }
+
+        .metric-card.motor-speed-card {
+          position: relative;
+        }
+
+        .motor-direction-icons .icon {
+          opacity: 1;
+          transition: opacity 0.3s ease, filter 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+          filter: drop-shadow(0 0 0 transparent);
+          cursor: default;
+          font-weight: 700;
+          font-size: 26px;
+          background: transparent;
+          border: 2px solid transparent;
+          color: grey;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 6px;
+          user-select: none;
+          box-sizing: border-box;
+        }
+
+        .motor-direction-icons .icon.active {
+          opacity: 1;
+          filter: drop-shadow(0 0 0 transparent);
+          color: black;
+          border-color: #22c55e;
+          box-shadow: 0 0 8px 2px #22c55e;
+          cursor: default;
+        }
+
+        .motor-direction-icons .icon.inactive {
+          opacity: 1;
+          pointer-events: none;
+          color: white;
+          filter: drop-shadow(0 0 0 transparent);
+          border-color: transparent;
+          box-shadow: none;
+          cursor: default;
         }
       `}</style>
     </div>

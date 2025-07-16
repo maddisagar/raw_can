@@ -4,9 +4,34 @@ import { useData } from "./data-context"
 import { CheckCircle, XCircle, Thermometer, Gauge } from "lucide-react"
 
 export default function StatusCards() {
-  const { currentData } = useData()
+  const { currentData, isConnected } = useData()
 
   if (!currentData.status615) return null
+
+  // Override sensor health status keys to true when websocket is disconnected
+  const sensorHealthStatusKeys = [
+    "SnsrHealthStatus",
+    "SnsrHealthStatusDcBus",
+    "SnsrHealthStatus12V",
+    "SnsrHealthStatus5V",
+    "SnsrHealthStatusPhBCurr",
+    "SnsrHealthStatusPhCCurr",
+    "SnsrHealthStatusThrot1",
+    "SnsrHealthStatusQep",
+    "SnsrHealthStatusCtlrTemp1",
+    "SnsrHealthStatusMtrTemp",
+    "SnsrHealthStatusThrot2",
+    "SnsrHealthStatusCtlrTemp2",
+  ]
+
+  // Create a copy of status615 to modify for display
+  const displayStatus615 = { ...currentData.status615 }
+
+  if (!isConnected) {
+    sensorHealthStatusKeys.forEach((key) => {
+      displayStatus615[key] = true
+    })
+  }
 
   const criticalStatus = [
     { key: "LimpHomeMode", label: "Limp Mode", icon: XCircle },
@@ -37,10 +62,10 @@ export default function StatusCards() {
         <h3>Critical Status</h3>
         <div className="cards-grid">
           {criticalStatus.map(({ key, label, icon: Icon }) => (
-            <div key={key} className={`status-card ${currentData.status615[key] ? "active" : "inactive"}`}>
+            <div key={key} className={`status-card ${displayStatus615[key] ? "active" : "inactive"}`}>
               <Icon size={24} />
               <span>{label}</span>
-              <div className={`indicator ${currentData.status615[key] ? "on" : "off"}`}></div>
+              <div className={`indicator ${displayStatus615[key] ? "on" : "off"}`}></div>
             </div>
           ))}
         </div>

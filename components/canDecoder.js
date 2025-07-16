@@ -86,9 +86,9 @@ function decodeDT008_B002(data) {
   const mtr_temp = ((data[4] >> 4) & 0x0F) | (data[5] << 4);
 
   return {
-    CtrlrTemp1: decodeTemperature(ctrlr_temp1),
-    CtrlrTemp2: decodeTemperature(ctrlr_temp2),
-    CtrlrTemp: decodeTemperature(ctrlr_temp),
+    CtlrTemp1: decodeTemperature(ctrlr_temp1),
+    CtlrTemp2: decodeTemperature(ctrlr_temp2),
+    CtlrTemp: decodeTemperature(ctrlr_temp),
     MtrTemp: decodeTemperature(mtr_temp),
   };
 }

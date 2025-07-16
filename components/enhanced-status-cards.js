@@ -13,9 +13,34 @@ import {
 } from "lucide-react"
 
 export default function EnhancedStatusCards({ showOnlyStatusGroups = false, showOnlySensorHealth = false, showOnlyTemperature = false }) {
-  const { currentData } = useData()
+  const { currentData, isConnected } = useData()
 
   if (!currentData.status615) return null
+
+  // Override sensor health status keys to true when websocket is disconnected
+  const sensorHealthStatusKeys = [
+    "SnsrHealthStatus",
+    "SnsrHealthStatusDcBus",
+    "SnsrHealthStatus12V",
+    "SnsrHealthStatus5V",
+    "SnsrHealthStatusPhBCurr",
+    "SnsrHealthStatusPhCCurr",
+    "SnsrHealthStatusThrot1",
+    "SnsrHealthStatusThrot2",
+    "SnsrHealthStatusQep",
+    "SnsrHealthStatusCtlrTemp1",
+    "SnsrHealthStatusCtlrTemp2",
+    "SnsrHealthStatusMtrTemp",
+  ]
+
+  // Create a copy of status615 to modify for display
+  const displayStatus615 = { ...currentData.status615 }
+
+  if (!isConnected) {
+    sensorHealthStatusKeys.forEach((key) => {
+      displayStatus615[key] = true
+    })
+  }
 
   const statusGroups = [
     {
@@ -76,6 +101,8 @@ export default function EnhancedStatusCards({ showOnlyStatusGroups = false, show
     { key: "SnsrHealthStatusCtlrTemp2", label: "Controller Temp 2" },
     { key: "SnsrHealthStatusMtrTemp", label: "Motor Temp" },
   ]
+
+  // Use displayStatus615 for sensor health status values
 
   const temperatures = currentData.temp616
     ? [
@@ -139,7 +166,7 @@ export default function EnhancedStatusCards({ showOnlyStatusGroups = false, show
 
           <div className="sensor-grid">
             {sensorHealthItems.map((sensor) => {
-              const isHealthy = currentData.status615[sensor.key]
+              const isHealthy = displayStatus615[sensor.key]
               return (
                 <div key={sensor.key} className={`sensor-item ${isHealthy ? "healthy" : "unhealthy"}`}>
                   <span className="sensor-label">{sensor.label}</span>
