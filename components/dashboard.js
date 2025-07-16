@@ -113,7 +113,7 @@ export default function Dashboard() {
           {dashboardTab === "vehicle" && <EnhancedStatusCards showOnlyStatusGroups={true} />}
           {dashboardTab === "sensor" && <EnhancedStatusCards showOnlySensorHealth={true} />}
           {dashboardTab === "temperature" && <EnhancedStatusCards showOnlyTemperature={true} />}
-          {dashboardTab === "alerts" && <SystemAlerts />}
+          {dashboardTab === "alerts" && <SystemAlerts isConnected={isConnected} />}
         </>
         )}
 

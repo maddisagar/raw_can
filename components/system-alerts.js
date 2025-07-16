@@ -106,16 +106,44 @@ function getRandomActiveErrors(errorList, maxCount = 5) {
   }))
 }
 
-export default function SystemAlerts() {
+export default function SystemAlerts({ isConnected }) {
   const [activeErrors, setActiveErrors] = useState([])
   const [showAll, setShowAll] = useState(false)
 
+  const allowedAlertCodes = [
+    "CanErr", "DcBusOvErr", "DcBusSnrScFlt", "DcBusUvErr", "MtrTempCutbackLmtErr", "CtlrTempCutbackLmtErr",
+    "MtrTempCutoffLmtErr", "CtlrTempCutoffLmtErr", "MtrTempSnsrOcFlt", "CtlrTempSnsrOcFlt", "MtrTempSnsrScFlt",
+    "CtlrTempSnsrScFlt", "PhBCurrSnsrOverCurrFlt", "PhBCurrSnsrScCurrFlt", "PhBCurrSnsrScFlt", "DcBusSnsrOcFlt",
+    "PhBCurrSnsrOcFlt", "PhCCurrSnsrOcFlt", "PhCCurrSnsrOverCurrFlt", "PhCCurrSnsrScCurrFlt", "PhCCurrSnsrScFlt",
+    "QepFlt", "SocLowLmtErr", "ThrotLowLmtErr", "ThrotRedunErr", "ThrotStuckErr", "ThrotUpLmtErr",
+    "UnexpectedParkSenseHighErr", "UnintendedAccelerationErr", "UnintendedDecelerationErr", "ThrotSnsrOcFlt",
+    "ThrotSnsrScFlt", "FnrErr", "FnrWarn", "Supply12SnsrOcFlt", "Supply5SnsrOcFlt", "Supply12UvErr", "Supply5UvErr",
+    "HwOverCurrFlt", "Type_0_Err", "Type_1_Err", "Type_2_Err", "Type_3_Err", "Type_4_Err", "QepFlt_2",
+    "PhACurrSnsrOverCurrFlt", "PhACurrSnsrScCurrFlt", "DcBusLvErr"
+  ]
+
+  function getRandomActiveErrorsFiltered(errorList, maxCount = 5) {
+    const filteredList = errorList.filter(error => allowedAlertCodes.includes(error.code))
+    const count = Math.floor(Math.random() * maxCount) + 1
+    const shuffled = filteredList.sort(() => 0.5 - Math.random())
+    return shuffled.slice(0, count).map((error, index) => ({
+      id: `${error.code}-${Date.now()}-${index}`,
+      ...error,
+      message: `${error.code} is active`,
+      timestamp: new Date().toLocaleTimeString(),
+    }))
+  }
+
   useEffect(() => {
+    if (!isConnected) {
+      setActiveErrors([])
+      return
+    }
     const interval = setInterval(() => {
-      setActiveErrors(getRandomActiveErrors(ERROR_LIST, 10))
+      setActiveErrors(getRandomActiveErrorsFiltered(ERROR_LIST, 10))
     }, 4000)
     return () => clearInterval(interval)
-  }, [])
+  }, [isConnected])
 
   const criticalCount = activeErrors.filter((e) => e.type === "critical").length
   const warningCount = activeErrors.filter((e) => e.type === "warning").length

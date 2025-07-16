@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Minus, Gauge, Zap, Activity } from "lucide-re
 import Odometer from "./odometer"
 
 export default function PerformanceMetrics() {
-  const { currentData, history, alerts } = useData()
+  const { currentData, history, alerts, isConnected } = useData()
 
   if (!currentData.measurement617 || !currentData.temp616) return null
 
@@ -13,11 +13,35 @@ export default function PerformanceMetrics() {
   const warningCount = alerts.filter((alert) => alert.type === "warning").length
   const infoCount = alerts.filter((alert) => alert.type === "info").length
 
-  const sensorHealthKeys = Object.keys(currentData.status615).filter((key) =>
+  const sensorHealthStatusKeys = [
+    "SnsrHealthStatus",
+    "SnsrHealthStatusDcBus",
+    "SnsrHealthStatus12V",
+    "SnsrHealthStatus5V",
+    "SnsrHealthStatusPhBCurr",
+    "SnsrHealthStatusPhCCurr",
+    "SnsrHealthStatusThrot1",
+    "SnsrHealthStatusQep",
+    "SnsrHealthStatusCtlrTemp1",
+    "SnsrHealthStatusMtrTemp",
+    "SnsrHealthStatusThrot2",
+    "SnsrHealthStatusCtlrTemp2",
+  ]
+
+  // Create a copy of status615 to modify for display
+  const displayStatus615 = { ...currentData.status615 }
+
+  if (!isConnected) {
+    sensorHealthStatusKeys.forEach((key) => {
+      displayStatus615[key] = true
+    })
+  }
+
+  const sensorHealthKeys = Object.keys(displayStatus615).filter((key) =>
     key.startsWith("SnsrHealthStatus")
   )
   const totalSensors = sensorHealthKeys.length
-  const healthySensors = sensorHealthKeys.filter((key) => currentData.status615[key]).length
+  const healthySensors = sensorHealthKeys.filter((key) => displayStatus615[key]).length
 
   const calculateTrend = (key, category) => {
     if (history.length < 2) return 0
