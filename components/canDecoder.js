@@ -128,6 +128,37 @@ export function decodeCANFrame(messageID, data) {
       return decodeDT008_B002(data);
     case DBC_V08_1_DT009_B003_FRAME_ID:
       return decodeDT009_B003(data);
+    case 0x03:
+      // System Alerts: decode 6 bytes (48 bits) into DBC-defined fault/warning/error codes
+      const bitToCode = [
+        // Byte 0
+        'CanErr', 'CtrlrTempCutbackLmtErr', 'CtrlrTempCutoffLmtErr', 'CtrlrTempSnsrOcFlt',
+        'CtrlrTempSnsrScFlt', 'DcBusOvErr', 'DcBusSnsrOcFlt', 'DcBusSnsrScFlt',
+        // Byte 1
+        'DcBusUvErr', 'MtrTempCutbackLmtErr', 'MtrTempCutoffLmtErr', 'MtrTempSnsrOcFlt',
+        'MtrTempSnsrScFlt', 'PhBCurrSnsrOcFlt', 'PhBCurrSnsrOverCurrFlt', 'PhBCurrSnsrScCurrFlt',
+        // Byte 2
+        'PhBCurrSnsrScFlt', 'PhCCurrSnsrOcFlt', 'PhCCurrSnsrOverCurrFlt', 'PhCCurrSnsrScCurrFlt',
+        'PhCCurrSnsrScFlt', 'QepFlt', 'SocLowLmtErr', 'ThrotLowLmtErr',
+        // Byte 3
+        'ThrotRedunErr', 'ThrotStuckErr', 'ThrotUpLmtErr', 'UnexpectedParkSenseHighErr',
+        'UnintendedAccelerationErr', 'UnintendedDecelerationErr', 'DcBusLvErr', 'ThrotSnsrOcFlt',
+        // Byte 4
+        'ThrotSnsrScFlt', 'FnrErr', 'FnrWarn', 'Supply12SnsrOcFlt',
+        'Supply5SnsrOcFlt', 'Supply12UvErr', 'Supply5UvErr', 'HwOverCurrFlt',
+        // Byte 5
+        'Type_0_Err', 'Type_1_Err', 'Type_2_Err', 'Type_3_Err',
+        'Type_4_Err', 'QepFlt_2', 'PhACurrSnsrOverCurrFlt', 'PhACurrSnsrScCurrFlt'
+      ];
+      const result = {};
+      for (let i = 0; i < bitToCode.length; i++) {
+        const byte = Math.floor(i / 8);
+        const bit = i % 8;
+        if (data[byte] !== undefined) {
+          result[bitToCode[i]] = !!((data[byte] >> bit) & 1);
+        }
+      }
+      return result;
     default:
       return null;
   }

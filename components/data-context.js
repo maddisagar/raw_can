@@ -45,9 +45,8 @@ function mergeDecodedSignals(currentData, decodedSignals, messageID) {
     newData.temp616 = { ...newData.temp616, ...sanitizedSignals }
   } else if (messageID === 0x617) {
     newData.measurement617 = { ...newData.measurement617, ...sanitizedSignals }
-  } else {
-    // For faults or other message IDs, merge into faults
-    // newData.faults = { ...newData.faults, ...sanitizedSignals }
+  } else if (messageID === 0x03) { // Only update faults for system alerts CAN ID (0x03)
+    newData.faults = { ...newData.faults, ...sanitizedSignals }
   }
 
   // Normalize keys to avoid undefined values causing UI errors
@@ -214,15 +213,18 @@ export const DataProvider = ({ children }) => {
                 // New handling for raw CAN frames
                 const decodedSignals = decodeCANFrame(message.id, message.data);
                 if (decodedSignals) {
-                  // Throttle decoding to 1ms using a timestamp check
+                  // Throttle decoding to 10ms using a timestamp check (was 50ms)
                   const now = Date.now();
-                  if (!decodedDataQueueRef.lastDecodeTime || now - decodedDataQueueRef.lastDecodeTime >= 50) {
+                  if (!decodedDataQueueRef.lastDecodeTime || now - decodedDataQueueRef.lastDecodeTime >= 10) {
                     decodedDataQueueRef.lastDecodeTime = now;
                     setCurrentData((prevData) => {
                       const merged = mergeDecodedSignals(prevData, decodedSignals, message.id);
                       const newTimestamp = new Date().toISOString();
-                      // Capture the full state for history
-                      setHistory((prevHistory) => [...prevHistory, { ...merged, timestamp: newTimestamp }]);
+                      // Limit history to last 200 entries
+                      setHistory((prevHistory) => {
+                        const updated = [...prevHistory, { ...merged, timestamp: newTimestamp }];
+                        return updated.length > 200 ? updated.slice(-200) : updated;
+                      });
                       return {
                         ...merged,
                         timestamp: newTimestamp,
@@ -450,6 +452,10 @@ export function calculateAlerts(currentData) {
   const newAlerts = []
   const timestamp = new Date().toLocaleString()
 
+  // Debug: Log currentData faults and status615
+  console.log("[calculateAlerts] faults:", currentData.faults);
+  console.log("[calculateAlerts] status615:", currentData.status615);
+
   // Generate critical alerts only from CRITICAL_ALERTS_LIST based on currentData.faults and status615
   CRITICAL_ALERTS_LIST.forEach(alert => {
     const code = alert.code
@@ -501,6 +507,9 @@ export function calculateAlerts(currentData) {
       })
     }
   })
+
+  // Debug: Log generated alerts
+  console.log("[calculateAlerts] generated alerts:", newAlerts);
 
   return newAlerts
 }

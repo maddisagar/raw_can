@@ -6,7 +6,10 @@ import Chart from "./chart"
 import CustomDropdown from "./custom-dropdown"
 
 export default function GraphContainer({ mode, fullView = false, darkMode = true }) {
-  const { history } = useData()
+  const { history, isConnected } = useData()
+  // Debug log to inspect history data
+  console.log("[GraphContainer] isConnected:", isConnected)
+  console.log("[GraphContainer] history:", history)
   const [selectedGraphs, setSelectedGraphs] = useState([])
   const [quadSelection, setQuadSelection] = useState(["DcBusVolt", "MtrSpd", "AcCurrMeaRms", "MtrTemp"])
 
