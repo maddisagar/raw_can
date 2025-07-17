@@ -11,7 +11,7 @@ export default function PerformanceMetrics() {
 
   const criticalCount = alerts.filter((alert) => alert.type === "critical").length
   const warningCount = alerts.filter((alert) => alert.type === "warning").length
-  const infoCount = alerts.filter((alert) => alert.type === "info").length
+  // Removed infoCount calculation as Info component is removed
 
   const sensorHealthStatusKeys = [
     "SnsrHealthStatus",
@@ -137,10 +137,7 @@ export default function PerformanceMetrics() {
             <span className="stat-label">Warning</span>
             <span className="stat-value warning">{warningCount}</span>
           </div>
-          <div className="stat-item">
-            <span className="stat-label">Info</span>
-            <span className="stat-value info">{infoCount}</span>
-          </div>
+          {/* Removed Info stat item */}
           <div className="stat-item">
             <span className="stat-label">Healthy Sensors</span>
             <span className="stat-value good">{healthySensors}/{totalSensors} Healthy</span>
@@ -149,39 +146,39 @@ export default function PerformanceMetrics() {
       </div>
 
       <div className="metrics-grid">
-{metrics.map((metric) => {
-  console.log(`Metric: ${metric.title}, Value: ${metric.value}`)
-  const IconComponent = metric.icon
-  return (
-    <div key={metric.title} className={`metric-card ${metric.title === "Motor Speed" ? "motor-speed-card" : ""}`}>
-      <div className="metric-header">
-        <h4>{metric.title}</h4>
-        <div className="icon-group">
-          {metric.title === "Motor Speed" && (
-            <div className="motor-direction-icons">
-              <button
-                className={`icon forward-icon letter-button ${metric.value > 0 ? "active" : "inactive"}`}
-                title="Forward"
-                aria-label="Forward"
-                type="button"
-              >
-                F
-              </button>
-<button
-  className={`icon reverse-icon letter-button ${metric.value < 0 ? "reverse-active" : "inactive"}`}
-  title="Reverse"
-  aria-label="Reverse"
-  type="button"
->
-  R
-</button>
-            </div>
-          )}
-          <div className="metric-icon" style={{ color: metric.color }}>
-            <IconComponent size={20} />
-          </div>
-        </div>
-      </div>
+        {metrics.map((metric) => {
+          console.log(`Metric: ${metric.title}, Value: ${metric.value}`)
+          const IconComponent = metric.icon
+          return (
+            <div key={metric.title} className={`metric-card ${metric.title === "Motor Speed" ? "motor-speed-card" : ""}`}>
+              <div className="metric-header">
+                <h4>{metric.title}</h4>
+                <div className="icon-group">
+                  {metric.title === "Motor Speed" && (
+                    <div className="motor-direction-icons">
+                      <button
+                        className={`icon forward-icon letter-button ${metric.value > 0 ? "active" : "inactive"}`}
+                        title="Forward"
+                        aria-label="Forward"
+                        type="button"
+                      >
+                        F
+                      </button>
+                      <button
+                        className={`icon reverse-icon letter-button ${metric.value < 0 ? "reverse-active" : "inactive"}`}
+                        title="Reverse"
+                        aria-label="Reverse"
+                        type="button"
+                      >
+                        R
+                      </button>
+                    </div>
+                  )}
+                  <div className="metric-icon" style={{ color: metric.color }}>
+                    <IconComponent size={20} />
+                  </div>
+                </div>
+              </div>
 
               <div className="metric-content">
                 <div className="metric-value">
@@ -196,12 +193,12 @@ export default function PerformanceMetrics() {
                   width: "100%"
                 }}>
                   <div style={{ transform: "scale(1.25)", transformOrigin: "center" }}>
-<Odometer
-  value={metric.title === "Motor Speed" ? Math.abs(metric.value ?? 0) : (metric.value ?? 0)}
-  max={typeof metric.max === "number" && metric.max > 0 ? metric.max : 1}
-  unit={metric.unit}
-  color={metric.color}
-/>
+                    <Odometer
+                      value={metric.title === "Motor Speed" ? Math.abs(metric.value ?? 0) : (metric.value ?? 0)}
+                      max={typeof metric.max === "number" && metric.max > 0 ? metric.max : 1}
+                      unit={metric.unit}
+                      color={metric.color}
+                    />
                   </div>
                 </div>
               </div>
@@ -317,17 +314,17 @@ export default function PerformanceMetrics() {
           padding: 0.15rem 0.35rem;
         }
 
-.icon.active {
-  color: black;
-  border-color: #22c55e;
-  box-shadow: 0 0 6px 2px #22c55e;
-}
+        .icon.active {
+          color: black;
+          border-color: #22c55e;
+          box-shadow: 0 0 6px 2px #22c55e;
+        }
 
-.icon.reverse-active {
-  color: black;
-  border-color: #FFD700;
-  box-shadow: 0 0 6px 2px #FFD700;
-}
+        .icon.reverse-active {
+          color: black;
+          border-color: #FFD700;
+          box-shadow: 0 0 6px 2px #FFD700;
+        }
 
         .icon.inactive {
           color: white;

@@ -7,6 +7,7 @@ const ERROR_LIST = [
   { code: "DcBusOvErr", type: "critical", icon: AlertTriangle },
   { code: "DcBusUvErr", type: "critical", icon: AlertTriangle },
   { code: "DcBusSnrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "DcBusSnsrOcFlt", type: "critical", icon: AlertTriangle },
   { code: "DcBusLvErr", type: "critical", icon: AlertTriangle },
   { code: "PhBCurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
   { code: "PhBCurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
@@ -58,6 +59,8 @@ function getCustomMessage(code) {
       return "DC Bus undervoltage error detected."
     case "DcBusSnrScFlt":
       return "DC Bus sensor short circuit fault."
+    case "DcBusSnsrOcFlt":
+      return "DC Bus sensor open circuit fault."
     case "DcBusLvErr":
       return "DC Bus sensor open circuit fault."
     case "PhBCurrSnsrOverCurrFlt":
@@ -130,7 +133,7 @@ export default function SystemAlerts({ isConnected }) {
   const [testCriticalMode, setTestCriticalMode] = useState(true) // Enabled test mode by default
 
   const allowedAlertCodes = [
-    "DcBusOvErr", "DcBusUvErr", "DcBusSnrScFlt", "DcBusLvErr", "PhBCurrSnsrOverCurrFlt", "PhBCurrSnsrScCurrFlt",
+    "DcBusOvErr", "DcBusUvErr", "DcBusSnrScFlt", "DcBusSnsrOcFlt", "DcBusLvErr", "PhBCurrSnsrOverCurrFlt", "PhBCurrSnsrScCurrFlt",
     "PhBCurrSnsrOcFlt", "PhBCurrSnsrScFlt", "PhCCurrSnsrOverCurrFlt", "PhCCurrSnsrScCurrFlt", "PhCCurrSnsrOcFlt",
     "PhCCurrSnsrScFlt", "PhACurrSnsrOverCurrFlt", "PhACurrSnsrScCurrFlt", "ThrotLowLmtErr", "ThrotUpLmtErr",
     "ThrotStuckErr", "ThrotRedunErr", "QepFlt", "MtrTempCutoffLmtErr", "CtlrTempCutoffLmtErr", "UnintendedAccelerationErr",
@@ -246,7 +249,7 @@ export default function SystemAlerts({ isConnected }) {
                   boxSizing: "border-box",
                   display: "flex",
                   flexDirection: "column",
-                  marginBottom: "1rem",
+                  marginBottom: "0.5rem",
                 }}
               >
                 <h4 className="column-title">Critical Alerts</h4>
@@ -282,7 +285,7 @@ export default function SystemAlerts({ isConnected }) {
                   boxSizing: "border-box",
                   display: "flex",
                   flexDirection: "column",
-                  marginBottom: "1rem",
+                  marginBottom: "0.5rem",
                 }}
               >
                 <h4 className="column-title">Warning Alerts</h4>
@@ -356,6 +359,7 @@ export default function SystemAlerts({ isConnected }) {
           gap: 1rem;
           color: #22c55e;
           flex-wrap: wrap;
+          margin-bottom: -2rem;
         }
 
         .alerts-title {
@@ -428,8 +432,9 @@ export default function SystemAlerts({ isConnected }) {
         .alert-item {
           display: flex;
           gap: 0.75rem;
-          padding: 1rem;
-          margin-bottom: 0.75rem;
+          padding: 0.3rem 1rem;
+          margin-bottom: 0.3rem;
+          min-height: 40px;
           border-left: 4px solid;
           transition: all 0.3s ease;
           cursor: default;
