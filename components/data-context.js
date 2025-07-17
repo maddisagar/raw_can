@@ -44,7 +44,12 @@ function mergeDecodedSignals(currentData, decodedSignals, messageID) {
   } else if (messageID === 0x616) {
     newData.temp616 = { ...newData.temp616, ...sanitizedSignals }
   } else if (messageID === 0x617) {
-    newData.measurement617 = { ...newData.measurement617, ...sanitizedSignals }
+    // Normalize MtrSpd: if between -1 and +1, set to 0
+    const mergedMeasurement = { ...newData.measurement617, ...sanitizedSignals }
+    if (typeof mergedMeasurement.MtrSpd === "number" && mergedMeasurement.MtrSpd > -1 && mergedMeasurement.MtrSpd < 1) {
+      mergedMeasurement.MtrSpd = 0
+    }
+    newData.measurement617 = mergedMeasurement
   } else if (messageID === 0x03) { // Only update faults for system alerts CAN ID (0x03)
     newData.faults = { ...newData.faults, ...sanitizedSignals }
   }
