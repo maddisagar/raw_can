@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, useMemo, useRef } from "react"
 import { decodeCANFrame } from "./canDecoder"
+import CRITICAL_ALERTS_LIST from "./critical-alerts-list"
+import WARNING_ALERTS_LIST, { getCustomMessage } from "./warning-alerts-list"
 
 const DataContext = createContext()
 
@@ -430,103 +432,57 @@ export function calculateAlerts(currentData) {
   const newAlerts = []
   const timestamp = new Date().toLocaleString()
 
-  // Temperature alerts
-  if (currentData.temp616.MtrTemp > 70) {
-    newAlerts.push({
-      id: `motor-temp-${Date.now()}`,
-      type: "critical",
-      category: "Temperature",
-      message: `Motor temperature critical: ${currentData.temp616.MtrTemp.toFixed(1)}°C`,
-      timestamp,
-      value: currentData.temp616.MtrTemp,
-      threshold: 70,
-    })
-  }
+  // Generate critical alerts only from CRITICAL_ALERTS_LIST based on currentData.faults and status615
+  CRITICAL_ALERTS_LIST.forEach(alert => {
+    const code = alert.code
+    let isActive = false
 
-  if (currentData.temp616.CtlrTemp1 > 65 || currentData.temp616.CtlrTemp2 > 65) {
-    newAlerts.push({
-      id: `controller-temp-${Date.now()}`,
-      type: "warning",
-      category: "Temperature",
-      message: `Controller temperature high: ${Math.max(currentData.temp616.CtlrTemp1, currentData.temp616.CtlrTemp2).toFixed(1)}°C`,
-      timestamp,
-      value: Math.max(currentData.temp616.CtlrTemp1, currentData.temp616.CtlrTemp2),
-      threshold: 65,
-    })
-  }
+    // Check in faults
+    if (currentData.faults && currentData.faults[code]) {
+      isActive = true
+    }
+    // Check in status615
+    else if (currentData.status615 && currentData.status615[code]) {
+      isActive = true
+    }
 
-  // Voltage alerts
-  if (currentData.measurement617.DcBusVolt > 450 || currentData.measurement617.DcBusVolt < 250) {
-    newAlerts.push({
-      id: `voltage-${Date.now()}`,
-      type: currentData.measurement617.DcBusVolt > 450 ? "critical" : "warning",
-      category: "Electrical",
-      message: `DC Bus voltage ${currentData.measurement617.DcBusVolt > 450 ? "overvoltage" : "undervoltage"}: ${currentData.measurement617.DcBusVolt.toFixed(1)}V`,
-      timestamp,
-      value: currentData.measurement617.DcBusVolt,
-      threshold: currentData.measurement617.DcBusVolt > 450 ? 450 : 250,
-    })
-  }
+    if (isActive) {
+      newAlerts.push({
+        id: `critical-${code}-${Date.now()}`,
+        type: "critical",
+        category: alert.category || "Critical",
+        code: code,
+        message: alert.message || `${code} is active`,
+        timestamp,
+      })
+    }
+  })
 
-  // Current alerts
-  if (currentData.measurement617.AcCurrMeaRms > 80) {
-    newAlerts.push({
-      id: `current-${Date.now()}`,
-      type: "warning",
-      category: "Electrical",
-      message: `AC Current high: ${currentData.measurement617.AcCurrMeaRms.toFixed(1)}A`,
-      timestamp,
-      value: currentData.measurement617.AcCurrMeaRms,
-      threshold: 80,
-    })
-  }
+  // Generate warning alerts only from WARNING_ALERTS_LIST based on currentData.status615 and faults
+  WARNING_ALERTS_LIST.forEach(alert => {
+    const code = alert.code
+    let isActive = false
 
-  // System status alerts
-  if (currentData.status615.LimpHomeMode) {
-    newAlerts.push({
-      id: `limp-mode-${Date.now()}`,
-      type: "critical",
-      category: "System",
-      message: "Vehicle in Limp Home Mode",
-      timestamp,
-      value: "ACTIVE",
-      threshold: "OFF",
-    })
-  }
+    // Check in faults
+    if (currentData.faults && currentData.faults[code]) {
+      isActive = true
+    }
+    // Check in status615
+    else if (currentData.status615 && currentData.status615[code]) {
+      isActive = true
+    }
 
-  // Sensor health alerts
-  const sensorHealthIssues = Object.entries(currentData.status615)
-    .filter(([key, value]) => key.startsWith("SnsrHealthStatus") && !value)
-    .map(([key]) => key.replace("SnsrHealthStatus", ""))
-
-  if (sensorHealthIssues.length > 0) {
-    newAlerts.push({
-      id: `sensor-health-${Date.now()}`,
-      type: "warning",
-      category: "Sensors",
-      message: `Sensor health issues: ${sensorHealthIssues.join(", ")}`,
-      timestamp,
-      value: sensorHealthIssues.length,
-      threshold: 0,
-    })
-  }
-
-  // Fault alerts from DTFS001_Type
-  if (currentData.faults) {
-    Object.entries(currentData.faults).forEach(([faultKey, faultValue]) => {
-      if (faultValue) {
-        newAlerts.push({
-          id: `fault-${faultKey}-${Date.now()}`,
-          type: "critical",
-          category: "Fault",
-          message: `System fault detected: ${faultKey}`,
-          timestamp,
-          value: "ACTIVE",
-          threshold: "OFF",
-        })
-      }
-    })
-  }
+    if (isActive) {
+      newAlerts.push({
+        id: `warning-${code}-${Date.now()}`,
+        type: "warning",
+        category: alert.category || "Warning",
+        code: code,
+        message: alert.message || getCustomMessage(code) || `${code} is active`,
+        timestamp,
+      })
+    }
+  })
 
   return newAlerts
 }
