@@ -37,6 +37,8 @@ export default function Dashboard() {
   const [graphMode, setGraphMode] = useState("individual") // individual, overlay, quad
   const { isConnected } = useData()
 
+  // For testing, you can toggle testWarningMode in SystemAlerts by passing a prop or state
+
   const toggleTheme = () => {
     setDarkMode(!darkMode)
   }
@@ -113,7 +115,7 @@ export default function Dashboard() {
           {dashboardTab === "vehicle" && <EnhancedStatusCards showOnlyStatusGroups={true} />}
           {dashboardTab === "sensor" && <EnhancedStatusCards showOnlySensorHealth={true} />}
           {dashboardTab === "temperature" && <EnhancedStatusCards showOnlyTemperature={true} />}
-          {dashboardTab === "alerts" && <SystemAlerts isConnected={isConnected} />}
+          {dashboardTab === "alerts" && <SystemAlerts isConnected={isConnected} testWarningMode={true} />}
         </>
         )}
 

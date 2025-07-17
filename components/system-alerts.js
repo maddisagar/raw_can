@@ -1,98 +1,42 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AlertTriangle, XCircle, Bell, Thermometer, Zap, Activity } from "lucide-react"
+import { AlertTriangle, XCircle, Bell, Thermometer, Zap } from "lucide-react"
 
 const ERROR_LIST = [
-  // DT007_B001_Status (0x615)
-  { code: "EcoBoost", type: "critical", icon: Zap },
-  { code: "LimpHomeMode", type: "critical", icon: AlertTriangle },
-  { code: "Brake", type: "warning", icon: XCircle },
-  { code: "Forward", type: "info", icon: Activity },
-  { code: "Reverse", type: "info", icon: Activity },
-  { code: "Neutral", type: "info", icon: Activity },
-  { code: "HillholdMode", type: "warning", icon: XCircle },
-  { code: "RegenMode", type: "info", icon: Activity },
-  { code: "ThrotMode", type: "warning", icon: XCircle },
-  { code: "AscMode", type: "info", icon: Activity },
-  { code: "SnsrHealthStatus", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatusDcBus", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatus12V", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatus5V", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatusPhBCurr", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatusPhCCurr", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatusThrot1", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatusQep", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatusCtlrTemp1", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatusMtrTemp", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatusThrot2", type: "warning", icon: AlertTriangle },
-  { code: "SnsrHealthStatusCtlrTemp2", type: "warning", icon: AlertTriangle },
-  { code: "PcModeEnable", type: "info", icon: Activity },
-  { code: "StartStop", type: "info", icon: Activity },
-  { code: "DcuControlModeStatus", type: "info", icon: Activity },
-  { code: "IdleShutdown", type: "info", icon: Activity },
-
-  // DT008_B002 (0x616)
-  { code: "CtlrTemp1", type: "warning", icon: Thermometer },
-  { code: "CtlrTemp2", type: "warning", icon: Thermometer },
-  { code: "CtlrTemp", type: "warning", icon: Thermometer },
-  { code: "MtrTemp", type: "critical", icon: Thermometer },
-
-  // DT009_B003 (0x617)
-  { code: "AcCurrMeaRms", type: "warning", icon: Zap },
-  { code: "DcCurrEstd", type: "warning", icon: Zap },
-  { code: "DcBusVolt", type: "critical", icon: Zap },
-  { code: "MtrSpd", type: "info", icon: Activity },
-  { code: "ThrotVolt", type: "warning", icon: Zap },
-
-  // DTFS001_Type (0x3)
-  { code: "CanErr", type: "critical", icon: AlertTriangle },
   { code: "DcBusOvErr", type: "critical", icon: AlertTriangle },
-  { code: "DcBusSnrScFlt", type: "critical", icon: AlertTriangle },
   { code: "DcBusUvErr", type: "critical", icon: AlertTriangle },
-  { code: "MtrTempCutbackLmtErr", type: "critical", icon: AlertTriangle },
-  { code: "CtlrTempCutbackLmtErr", type: "critical", icon: AlertTriangle },
-  { code: "MtrTempCutoffLmtErr", type: "critical", icon: AlertTriangle },
-  { code: "CtlrTempCutoffLmtErr", type: "critical", icon: AlertTriangle },
-  { code: "MtrTempSnsrOcFlt", type: "critical", icon: AlertTriangle },
-  { code: "CtlrTempSnsrOcFlt", type: "critical", icon: AlertTriangle },
-  { code: "MtrTempSnsrScFlt", type: "critical", icon: AlertTriangle },
-  { code: "CtlrTempSnsrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "DcBusSnrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "DcBusLvErr", type: "critical", icon: AlertTriangle },
   { code: "PhBCurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
   { code: "PhBCurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
-  { code: "DcBusSnsrOcFlt", type: "critical", icon: AlertTriangle },
   { code: "PhBCurrSnsrOcFlt", type: "critical", icon: AlertTriangle },
-  { code: "PhCCurrSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhBCurrSnsrScFlt", type: "critical", icon: AlertTriangle },
   { code: "PhCCurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
   { code: "PhCCurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhCCurrSnsrOcFlt", type: "critical", icon: AlertTriangle },
   { code: "PhCCurrSnsrScFlt", type: "critical", icon: AlertTriangle },
-  { code: "QepFlt", type: "critical", icon: AlertTriangle },
-  { code: "SocLowLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "PhACurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhACurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
   { code: "ThrotLowLmtErr", type: "critical", icon: AlertTriangle },
-  { code: "ThrotRedunErr", type: "critical", icon: AlertTriangle },
-  { code: "ThrotStuckErr", type: "critical", icon: AlertTriangle },
   { code: "ThrotUpLmtErr", type: "critical", icon: AlertTriangle },
-  { code: "UnexpectedParkSenseHighErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotStuckErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotRedunErr", type: "critical", icon: AlertTriangle },
+  { code: "QepFlt", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempCutoffLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempCutoffLmtErr", type: "critical", icon: AlertTriangle },
   { code: "UnintendedAccelerationErr", type: "critical", icon: AlertTriangle },
   { code: "UnintendedDecelerationErr", type: "critical", icon: AlertTriangle },
+  { code: "CanErr", type: "critical", icon: AlertTriangle },
+  { code: "UnexpectedParkSenseHighErr", type: "critical", icon: AlertTriangle },
   { code: "ThrotSnsrOcFlt", type: "critical", icon: AlertTriangle },
   { code: "ThrotSnsrScFlt", type: "critical", icon: AlertTriangle },
   { code: "FnrErr", type: "critical", icon: AlertTriangle },
-  { code: "FnrWarn", type: "warning", icon: AlertTriangle },
-  { code: "Supply12SnsrOcFlt", type: "critical", icon: AlertTriangle },
-  { code: "Supply5SnsrOcFlt", type: "critical", icon: AlertTriangle },
   { code: "Supply12UvErr", type: "critical", icon: AlertTriangle },
   { code: "Supply5UvErr", type: "critical", icon: AlertTriangle },
   { code: "HwOverCurrFlt", type: "critical", icon: AlertTriangle },
-  { code: "Type_0_Err", type: "critical", icon: AlertTriangle },
-  { code: "Type_1_Err", type: "critical", icon: AlertTriangle },
-  { code: "Type_2_Err", type: "critical", icon: AlertTriangle },
-  { code: "Type_3_Err", type: "critical", icon: AlertTriangle },
-  { code: "Type_4_Err", type: "critical", icon: AlertTriangle },
-  { code: "QepFlt_2", type: "critical", icon: AlertTriangle },
-  { code: "PhACurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
-  { code: "PhACurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
-  { code: "DcBusLvErr", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempCutbackLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempCutbackLmtErr", type: "critical", icon: AlertTriangle },
 ]
 
 function getRandomActiveErrors(errorList, maxCount = 5) {
@@ -101,25 +45,97 @@ function getRandomActiveErrors(errorList, maxCount = 5) {
   return shuffled.slice(0, count).map((error, index) => ({
     id: `${error.code}-${Date.now()}-${index}`,
     ...error,
-    message: `${error.code} is active`,
+    message: getCustomMessage(error.code),
     timestamp: new Date().toLocaleTimeString(),
   }))
+}
+
+function getCustomMessage(code) {
+  switch (code) {
+    case "DcBusOvErr":
+      return "DC Bus overvoltage error detected."
+    case "DcBusUvErr":
+      return "DC Bus undervoltage error detected."
+    case "DcBusSnrScFlt":
+      return "DC Bus sensor short circuit fault."
+    case "DcBusLvErr":
+      return "DC Bus sensor open circuit fault."
+    case "PhBCurrSnsrOverCurrFlt":
+      return "Phase B current sensor overcurrent fault."
+    case "PhBCurrSnsrScCurrFlt":
+      return "Phase B current sensor short circuit fault."
+    case "PhBCurrSnsrOcFlt":
+      return "Phase B current sensor open circuit fault."
+    case "PhBCurrSnsrScFlt":
+      return "Phase B current sensor short fault."
+    case "PhCCurrSnsrOverCurrFlt":
+      return "Phase C current sensor overcurrent fault."
+    case "PhCCurrSnsrScCurrFlt":
+      return "Phase C current sensor short circuit fault."
+    case "PhCCurrSnsrOcFlt":
+      return "Phase C current sensor open circuit fault."
+    case "PhCCurrSnsrScFlt":
+      return "Phase C current sensor short fault."
+    case "PhACurrSnsrOverCurrFlt":
+      return "Phase A current sensor overcurrent fault."
+    case "PhACurrSnsrScCurrFlt":
+      return "Phase A current sensor short circuit fault."
+    case "ThrotLowLmtErr":
+      return "Throttle lower limit error."
+    case "ThrotUpLmtErr":
+      return "Throttle upper limit error."
+    case "ThrotStuckErr":
+      return "Throttle stuck error."
+    case "ThrotRedunErr":
+      return "Throttle redundancy error."
+    case "QepFlt":
+      return "Quadrature encoder pulse fault."
+    case "MtrTempCutoffLmtErr":
+      return "Motor temperature cutoff limit reached."
+    case "CtlrTempCutoffLmtErr":
+      return "Controller temperature cutoff limit reached."
+    case "UnintendedAccelerationErr":
+      return "Unintended acceleration detected."
+    case "UnintendedDecelerationErr":
+      return "Unintended deceleration detected."
+    case "CanErr":
+      return "CAN communication error."
+    case "UnexpectedParkSenseHighErr":
+      return "Unexpected park sense signal high."
+    case "ThrotSnsrOcFlt":
+      return "Throttle sensor open circuit fault."
+    case "ThrotSnsrScFlt":
+      return "Throttle sensor short circuit fault."
+    case "FnrErr":
+      return "Forward/Reverse error detected."
+    case "Supply12UvErr":
+      return "12V supply undervoltage error."
+    case "Supply5UvErr":
+      return "5V supply undervoltage error."
+    case "HwOverCurrFlt":
+      return "Hardware overcurrent fault."
+    case "MtrTempCutbackLmtErr":
+      return "Motor temperature cutback limit reached."
+    case "CtlrTempCutbackLmtErr":
+      return "Controller temperature cutback limit reached."
+    default:
+      return `${code} is active`
+  }
 }
 
 export default function SystemAlerts({ isConnected }) {
   const [activeErrors, setActiveErrors] = useState([])
   const [showAll, setShowAll] = useState(false)
+  const [testWarningMode, setTestWarningMode] = useState(true) // Enabled test mode by default
+  const [testCriticalMode, setTestCriticalMode] = useState(true) // Enabled test mode by default
 
   const allowedAlertCodes = [
-    "CanErr", "DcBusOvErr", "DcBusSnrScFlt", "DcBusUvErr", "MtrTempCutbackLmtErr", "CtlrTempCutbackLmtErr",
-    "MtrTempCutoffLmtErr", "CtlrTempCutoffLmtErr", "MtrTempSnsrOcFlt", "CtlrTempSnsrOcFlt", "MtrTempSnsrScFlt",
-    "CtlrTempSnsrScFlt", "PhBCurrSnsrOverCurrFlt", "PhBCurrSnsrScCurrFlt", "PhBCurrSnsrScFlt", "DcBusSnsrOcFlt",
-    "PhBCurrSnsrOcFlt", "PhCCurrSnsrOcFlt", "PhCCurrSnsrOverCurrFlt", "PhCCurrSnsrScCurrFlt", "PhCCurrSnsrScFlt",
-    "QepFlt", "SocLowLmtErr", "ThrotLowLmtErr", "ThrotRedunErr", "ThrotStuckErr", "ThrotUpLmtErr",
-    "UnexpectedParkSenseHighErr", "UnintendedAccelerationErr", "UnintendedDecelerationErr", "ThrotSnsrOcFlt",
-    "ThrotSnsrScFlt", "FnrErr", "FnrWarn", "Supply12SnsrOcFlt", "Supply5SnsrOcFlt", "Supply12UvErr", "Supply5UvErr",
-    "HwOverCurrFlt", "Type_0_Err", "Type_1_Err", "Type_2_Err", "Type_3_Err", "Type_4_Err", "QepFlt_2",
-    "PhACurrSnsrOverCurrFlt", "PhACurrSnsrScCurrFlt", "DcBusLvErr"
+    "DcBusOvErr", "DcBusUvErr", "DcBusSnrScFlt", "DcBusLvErr", "PhBCurrSnsrOverCurrFlt", "PhBCurrSnsrScCurrFlt",
+    "PhBCurrSnsrOcFlt", "PhBCurrSnsrScFlt", "PhCCurrSnsrOverCurrFlt", "PhCCurrSnsrScCurrFlt", "PhCCurrSnsrOcFlt",
+    "PhCCurrSnsrScFlt", "PhACurrSnsrOverCurrFlt", "PhACurrSnsrScCurrFlt", "ThrotLowLmtErr", "ThrotUpLmtErr",
+    "ThrotStuckErr", "ThrotRedunErr", "QepFlt", "MtrTempCutoffLmtErr", "CtlrTempCutoffLmtErr", "UnintendedAccelerationErr",
+    "UnintendedDecelerationErr", "CanErr", "UnexpectedParkSenseHighErr", "ThrotSnsrOcFlt", "ThrotSnsrScFlt",
+    "FnrErr", "Supply12UvErr", "Supply5UvErr", "HwOverCurrFlt", "MtrTempCutbackLmtErr", "CtlrTempCutbackLmtErr"
   ]
 
   function getRandomActiveErrorsFiltered(errorList, maxCount = 5) {
@@ -134,20 +150,69 @@ export default function SystemAlerts({ isConnected }) {
     }))
   }
 
+  // New function to get only warning errors for test mode
+  function getTestWarningErrors() {
+    const warningCodes = [
+      "MtrTempSnsrOcFlt",
+      "MtrTempSnsrScFlt",
+      "MtrTempCutbackLmtErr",
+      "CtlrTempSnsrOcFlt",
+      "CtlrTempSnsrScFlt",
+      "CtlrTempCutbackLmtErr",
+      "PhACurrSnsrOverCurrFlt"
+    ]
+    return warningCodes.map((code, index) => ({
+      id: `${code}-test-${index}`,
+      code,
+      type: "warning",
+      icon: AlertTriangle,
+      message: getCustomMessage(code),
+      timestamp: new Date().toLocaleTimeString(),
+    }))
+  }
+
+  // New function to get only critical errors for test mode
+  function getTestCriticalErrors() {
+    return allowedAlertCodes.map((code, index) => ({
+      id: `${code}-test-${index}`,
+      code,
+      type: "critical",
+      icon: AlertTriangle,
+      message: getCustomMessage(code),
+      timestamp: new Date().toLocaleTimeString(),
+    }))
+  }
+
   useEffect(() => {
+    // Show system alerts even when disconnected
     if (!isConnected) {
-      setActiveErrors([])
+      if (testCriticalMode && testWarningMode) {
+        setActiveErrors([...getTestCriticalErrors(), ...getTestWarningErrors()])
+      } else if (testCriticalMode) {
+        setActiveErrors(getTestCriticalErrors())
+      } else if (testWarningMode) {
+        setActiveErrors(getTestWarningErrors())
+      } else {
+        setActiveErrors([])
+      }
       return
     }
-    const interval = setInterval(() => {
-      setActiveErrors(getRandomActiveErrorsFiltered(ERROR_LIST, 10))
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [isConnected])
+    if (testCriticalMode && testWarningMode) {
+      setActiveErrors([...getTestCriticalErrors(), ...getTestWarningErrors()])
+    } else if (testCriticalMode) {
+      setActiveErrors(getTestCriticalErrors())
+    } else if (testWarningMode) {
+      setActiveErrors(getTestWarningErrors())
+    } else {
+      const interval = setInterval(() => {
+        setActiveErrors(getRandomActiveErrorsFiltered(ERROR_LIST, 10))
+      }, 4000)
+      return () => clearInterval(interval)
+    }
+  }, [isConnected, testWarningMode, testCriticalMode])
 
   const criticalCount = activeErrors.filter((e) => e.type === "critical").length
   const warningCount = activeErrors.filter((e) => e.type === "warning").length
-  const infoCount = activeErrors.filter((e) => e.type === "info").length
 
   return (
     <>
@@ -158,125 +223,92 @@ export default function SystemAlerts({ isConnected }) {
             <h3>System Alerts</h3>
           </div>
           <div className="alert-counts">
-            {/* Removed critical, warning, and info counts from top right side */}
+            {/* Removed critical and warning counts from top right side */}
           </div>
         </div>
 
-        <div className="alerts-columns-full">
+        <div className="alerts-columns-full" style={{ display: "flex", gap: "1rem" }}>
           {activeErrors.length === 0 ? (
             <div className="no-alerts">
               <XCircle size={24} />
               <span>All systems operating normally</span>
             </div>
           ) : (
-        <div className="alerts-columns-row" style={{ display: "flex", gap: "1rem", paddingBottom: "1rem", flexWrap: "wrap" }}>
-          <div
-            className="alerts-column critical"
-            style={{
-              flex: "1 1 300px",
-              borderRight: "2px solid rgba(128, 128, 128, 0.7)",
-              paddingLeft: "1rem",
-              paddingRight: "1rem",
-              minHeight: "auto",
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-              marginBottom: "1rem",
-            }}
-          >
-            <h4 className="column-title">Critical Alerts</h4>
-            {activeErrors
-              .filter((alert) => alert.type === "critical")
-              .map((alert) => {
-                const IconComponent = alert.icon
-                return (
-                  <div key={alert.id} className={`alert-item ${alert.type}`}>
-                    <div className="alert-icon">
-                      <IconComponent size={18} />
-                    </div>
-                    <div className="alert-content">
-                      <div className="alert-header">
-                        <span className="alert-category">{alert.code}</span>
-                        <span className="alert-time">{alert.timestamp}</span>
+            <>
+              <div
+                className="alerts-column critical"
+                style={{
+                  flex: "1",
+                  borderRight: "2px solid rgba(128, 128, 128, 0.7)",
+                  paddingLeft: "1rem",
+                  paddingRight: "1rem",
+                  minHeight: "auto",
+                  boxSizing: "border-box",
+                  display: "flex",
+                  flexDirection: "column",
+                  marginBottom: "1rem",
+                }}
+              >
+                <h4 className="column-title">Critical Alerts</h4>
+                {activeErrors
+                  .filter((alert) => alert.type === "critical")
+                  .sort((a, b) => a.code.localeCompare(b.code))  // Sort critical alerts alphabetically
+                  .map((alert) => {
+                    const IconComponent = alert.icon
+                    return (
+                      <div key={alert.id} className={`alert-item ${alert.type}`}>
+                        <div className="alert-icon">
+                          <IconComponent size={18} />
+                        </div>
+                        <div className="alert-content">
+                          <div className="alert-header">
+                            <span className="alert-category">{alert.code}</span>
+                            <span className="alert-time">{alert.timestamp}</span>
+                          </div>
+                          <div className="alert-message">{alert.message}</div>
+                        </div>
                       </div>
-                      <div className="alert-message">{alert.message}</div>
-                    </div>
-                  </div>
-                )
-              })}
-          </div>
+                    )
+                  })}
+              </div>
 
-          <div
-            className="alerts-column warning"
-            style={{
-              flex: "1 1 300px",
-              borderRight: "2px solid rgba(128, 128, 128, 0.7)",
-              paddingLeft: "1rem",
-              paddingRight: "1rem",
-              minHeight: "auto",
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-              marginBottom: "1rem",
-            }}
-          >
-            <h4 className="column-title">Warning Alerts</h4>
-            {activeErrors
-              .filter((alert) => alert.type === "warning")
-              .map((alert) => {
-                const IconComponent = alert.icon
-                return (
-                  <div key={alert.id} className={`alert-item ${alert.type}`}>
-                    <div className="alert-icon">
-                      <IconComponent size={18} />
-                    </div>
-                    <div className="alert-content">
-                      <div className="alert-header">
-                        <span className="alert-category">{alert.code}</span>
-                        <span className="alert-time">{alert.timestamp}</span>
-                      </div>
-                      <div className="alert-message">{alert.message}</div>
-                    </div>
-                  </div>
-                )
-              })}
+              <div
+                className="alerts-column warning"
+                style={{
+                  flex: "1",
+                  paddingLeft: "1rem",
+                  paddingRight: "1rem",
+                  minHeight: "auto",
+                  boxSizing: "border-box",
+                  display: "flex",
+                  flexDirection: "column",
+                  marginBottom: "1rem",
+                }}
+              >
+                <h4 className="column-title">Warning Alerts</h4>
+                {activeErrors
+                  .filter((alert) => alert.type === "warning")
+                  .map((alert) => {
+                    const IconComponent = alert.icon
+                    return (
+                      <div key={alert.id} className={`alert-item ${alert.type}`}>
+                        <div className="alert-icon">
+                          <IconComponent size={18} />
+                        </div>
+                        <div className="alert-content">
+                          <div className="alert-header">
+                            <span className="alert-category">{alert.code}</span>
+                            <span className="alert-time">{alert.timestamp}</span>
+                          </div>
+          <div className="alert-message">
+            <div style={{ fontSize: "0.8em", marginTop: "0.2em" }}>{alert.message}</div>
           </div>
-
-          <div
-            className="alerts-column info"
-            style={{
-              flex: "1 1 300px",
-              paddingLeft: "1rem",
-              paddingRight: "1rem",
-              minHeight: "auto",
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-              marginBottom: "1rem",
-            }}
-          >
-            <h4 className="column-title">Info Alerts</h4>
-            {activeErrors
-              .filter((alert) => alert.type === "info")
-              .map((alert) => {
-                const IconComponent = alert.icon
-                return (
-                  <div key={alert.id} className={`alert-item ${alert.type}`}>
-                    <div className="alert-icon">
-                      <IconComponent size={18} />
-                    </div>
-                    <div className="alert-content">
-                      <div className="alert-header">
-                        <span className="alert-category">{alert.code}</span>
-                        <span className="alert-time">{alert.timestamp}</span>
+                        </div>
                       </div>
-                      <div className="alert-message">{alert.message}</div>
-                    </div>
-                  </div>
-                )
-              })}
-          </div>
-        </div>
+                    )
+                  })}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -356,10 +388,6 @@ export default function SystemAlerts({ isConnected }) {
           background: #f59e0b;
         }
 
-        .alert-badge.info {
-          background: #22c55e;
-        }
-
         .alerts-list {
           display: flex;
           flex-direction: column;
@@ -397,16 +425,11 @@ export default function SystemAlerts({ isConnected }) {
           color: #f59e0b;
         }
 
-        .alerts-group.info .group-title {
-          color: #22c55e;
-        }
-
         .alert-item {
           display: flex;
           gap: 0.75rem;
           padding: 1rem;
           margin-bottom: 0.75rem;
-          border-radius: 8px;
           border-left: 4px solid;
           transition: all 0.3s ease;
           cursor: default;
@@ -422,11 +445,6 @@ export default function SystemAlerts({ isConnected }) {
         .alert-item.warning {
           border-left-color: #f59e0b;
           background: rgba(245, 158, 11, 0.1);
-        }
-
-        .alert-item.info {
-          border-left-color: #22c55e;
-          background: rgba(34, 197, 94, 0.1);
         }
 
         .alert-item:hover {
@@ -483,6 +501,50 @@ export default function SystemAlerts({ isConnected }) {
             width: 100%;
             height: 1px;
             margin: 1rem 0;
+          }
+        }
+        @media (max-width: 768px) {
+          .container-full {
+            padding: 0.1rem 0.5rem;
+          }
+
+          .alerts-columns-full {
+            flex-direction: column;
+          }
+
+          .alerts-column {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            margin-bottom: 1rem;
+            border-right: none !important;
+          }
+
+          .alerts-column.critical {
+            border-right: none !important;
+            border-bottom: 2px solid rgba(128, 128, 128, 0.7);
+            padding-bottom: 1rem;
+          }
+
+          .alert-item {
+            padding: 0.75rem;
+          }
+
+          .alert-header {
+            font-size: 0.85rem;
+          }
+
+          .alert-message {
+            font-size: 0.8rem;
+          }
+
+          .alerts-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+          }
+
+          .alerts-title h3 {
+            font-size: 1.1rem;
           }
         }
       `}</style>

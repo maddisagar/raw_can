@@ -1,0 +1,235 @@
+// DT007_B001_Status (0x615)
+  { code: "EcoBoost", type: "critical", icon: Zap },
+  { code: "LimpHomeMode", type: "critical", icon: AlertTriangle },
+  { code: "Brake", type: "warning", icon: XCircle },
+  { code: "Forward", type: "info", icon: Activity },
+  { code: "Reverse", type: "info", icon: Activity },
+  { code: "Neutral", type: "info", icon: Activity },
+  { code: "HillholdMode", type: "warning", icon: XCircle },
+  { code: "RegenMode", type: "info", icon: Activity },
+  { code: "ThrotMode", type: "warning", icon: XCircle },
+  { code: "AscMode", type: "info", icon: Activity },
+  { code: "SnsrHealthStatus", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusDcBus", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatus12V", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatus5V", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusPhBCurr", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusPhCCurr", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusThrot1", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusQep", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusCtlrTemp1", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusMtrTemp", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusThrot2", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusCtlrTemp2", type: "warning", icon: AlertTriangle },
+  { code: "PcModeEnable", type: "info", icon: Activity },
+  { code: "StartStop", type: "info", icon: Activity },
+  { code: "DcuControlModeStatus", type: "info", icon: Activity },
+  { code: "IdleShutdown", type: "info", icon: Activity },
+
+  // DT008_B002 (0x616)
+  { code: "CtlrTemp1", type: "warning", icon: Thermometer },
+  { code: "CtlrTemp2", type: "warning", icon: Thermometer },
+  { code: "CtlrTemp", type: "warning", icon: Thermometer },
+  { code: "MtrTemp", type: "critical", icon: Thermometer },
+
+  // DT009_B003 (0x617)
+  { code: "AcCurrMeaRms", type: "warning", icon: Zap },
+  { code: "DcCurrEstd", type: "warning", icon: Zap },
+  { code: "DcBusVolt", type: "critical", icon: Zap },
+  { code: "MtrSpd", type: "info", icon: Activity },
+  { code: "ThrotVolt", type: "warning", icon: Zap },
+
+  // DTFS001_Type (0x3)
+  { code: "CanErr", type: "critical", icon: AlertTriangle },
+  { code: "DcBusOvErr", type: "critical", icon: AlertTriangle },
+  { code: "DcBusSnrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "DcBusUvErr", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempCutbackLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempCutbackLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempCutoffLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempCutoffLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempSnsrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempSnsrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhBCurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhBCurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "DcBusSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhBCurrSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhCCurrSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhCCurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhCCurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhCCurrSnsrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "QepFlt", type: "critical", icon: AlertTriangle },
+  { code: "SocLowLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotLowLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotRedunErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotStuckErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotUpLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "UnexpectedParkSenseHighErr", type: "critical", icon: AlertTriangle },
+  { code: "UnintendedAccelerationErr", type: "critical", icon: AlertTriangle },
+  { code: "UnintendedDecelerationErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "ThrotSnsrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "FnrErr", type: "critical", icon: AlertTriangle },
+  { code: "FnrWarn", type: "warning", icon: AlertTriangle },
+  { code: "Supply12SnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "Supply5SnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "Supply12UvErr", type: "critical", icon: AlertTriangle },
+  { code: "Supply5UvErr", type: "critical", icon: AlertTriangle },
+  { code: "HwOverCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "Type_0_Err", type: "critical", icon: AlertTriangle },
+  { code: "Type_1_Err", type: "critical", icon: AlertTriangle },
+  { code: "Type_2_Err", type: "critical", icon: AlertTriangle },
+  { code: "Type_3_Err", type: "critical", icon: AlertTriangle },
+  { code: "Type_4_Err", type: "critical", icon: AlertTriangle },
+  { code: "QepFlt_2", type: "critical", icon: AlertTriangle },
+  { code: "PhACurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhACurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "DcBusLvErr", type: "critical", icon: AlertTriangle },
+]
+=======
+const ERROR_LIST = [
+  // DT007_B001_Status (0x615)
+  { code: "EcoBoost", type: "critical", icon: Zap },
+  { code: "LimpHomeMode", type: "critical", icon: AlertTriangle },
+  { code: "Brake", type: "warning", icon: XCircle },
+  { code: "Forward", type: "info", icon: Activity },
+  { code: "Reverse", type: "info", icon: Activity },
+  { code: "Neutral", type: "info", icon: Activity },
+  { code: "HillholdMode", type: "warning", icon: XCircle },
+  { code: "RegenMode", type: "info", icon: Activity },
+  { code: "ThrotMode", type: "warning", icon: XCircle },
+  { code: "AscMode", type: "info", icon: Activity },
+  { code: "SnsrHealthStatus", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusDcBus", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatus12V", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatus5V", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusPhBCurr", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusPhCCurr", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusThrot1", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusQep", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusCtlrTemp1", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusMtrTemp", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusThrot2", type: "warning", icon: AlertTriangle },
+  { code: "SnsrHealthStatusCtlrTemp2", type: "warning", icon: AlertTriangle },
+  { code: "PcModeEnable", type: "info", icon: Activity },
+  { code: "StartStop", type: "info", icon: Activity },
+  { code: "DcuControlModeStatus", type: "info", icon: Activity },
+  { code: "IdleShutdown", type: "info", icon: Activity },
+
+  // DT008_B002 (0x616)
+  { code: "CtlrTemp1", type: "warning", icon: Thermometer },
+  { code: "CtlrTemp2", type: "warning", icon: Thermometer },
+  { code: "CtlrTemp", type: "warning", icon: Thermometer },
+  { code: "MtrTemp", type: "critical", icon: Thermometer },
+
+  // DT009_B003 (0x617)
+  { code: "AcCurrMeaRms", type: "warning", icon: Zap },
+  { code: "DcCurrEstd", type: "warning", icon: Zap },
+  { code: "DcBusVolt", type: "critical", icon: Zap },
+  { code: "MtrSpd", type: "info", icon: Activity },
+  { code: "ThrotVolt", type: "warning", icon: Zap },
+
+  // DTFS001_Type (0x3)
+  { code: "CanErr", type: "critical", icon: AlertTriangle },
+  { code: "DcBusOvErr", type: "critical", icon: AlertTriangle },
+  { code: "DcBusSnrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "DcBusUvErr", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempCutbackLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempCutbackLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempCutoffLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempCutoffLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "MtrTempSnsrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "CtlrTempSnsrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhBCurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhBCurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "DcBusSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhBCurrSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhCCurrSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhCCurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhCCurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhCCurrSnsrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "QepFlt", type: "critical", icon: AlertTriangle },
+  { code: "SocLowLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotLowLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotRedunErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotStuckErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotUpLmtErr", type: "critical", icon: AlertTriangle },
+  { code: "UnexpectedParkSenseHighErr", type: "critical", icon: AlertTriangle },
+  { code: "UnintendedAccelerationErr", type: "critical", icon: AlertTriangle },
+  { code: "UnintendedDecelerationErr", type: "critical", icon: AlertTriangle },
+  { code: "ThrotSnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "ThrotSnsrScFlt", type: "critical", icon: AlertTriangle },
+  { code: "FnrErr", type: "critical", icon: AlertTriangle },
+  { code: "FnrWarn", type: "warning", icon: AlertTriangle },
+  { code: "Supply12SnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "Supply5SnsrOcFlt", type: "critical", icon: AlertTriangle },
+  { code: "Supply12UvErr", type: "critical", icon: AlertTriangle },
+  { code: "Supply5UvErr", type: "critical", icon: AlertTriangle },
+  { code: "HwOverCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "Type_0_Err", type: "critical", icon: AlertTriangle },
+  { code: "Type_1_Err", type: "critical", icon: AlertTriangle },
+  { code: "Type_2_Err", type: "critical", icon: AlertTriangle },
+  { code: "Type_3_Err", type: "critical", icon: AlertTriangle },
+  { code: "Type_4_Err", type: "critical", icon: AlertTriangle },
+  { code: "QepFlt_2", type: "critical", icon: AlertTriangle },
+  { code: "PhACurrSnsrOverCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "PhACurrSnsrScCurrFlt", type: "critical", icon: AlertTriangle },
+  { code: "DcBusLvErr", type: "critical", icon: AlertTriangle },
+]
+
+const TEST_ALERTS = [
+  {
+    id: "TestCritical-1",
+    code: "TestCritical",
+    type: "critical",
+    icon: AlertTriangle,
+    message: "This is a test critical alert",
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    id: "TestWarning-1",
+    code: "TestWarning",
+    type: "warning",
+    icon: XCircle,
+    message: "This is a test warning alert",
+    timestamp: new Date().toLocaleTimeString(),
+  },
+  {
+    id: "TestInfo-1",
+    code: "TestInfo",
+    type: "info",
+    icon: Bell,
+    message: "This is a test info alert",
+    timestamp: new Date().toLocaleTimeString(),
+  },
+]
+<<<<<<< SEARCH
+  useEffect(() => {
+    if (!isConnected) {
+      setActiveErrors([])
+      return
+    }
+    const interval = setInterval(() => {
+      setActiveErrors(getRandomActiveErrorsFiltered(ERROR_LIST, 10))
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [isConnected])
+=======
+  useEffect(() => {
+    if (!isConnected) {
+      setActiveErrors([])
+      return
+    }
+    // For test purpose, set constant test alerts instead of random errors
+    setActiveErrors(TEST_ALERTS)
+    /*
+    const interval = setInterval(() => {
+      setActiveErrors(getRandomActiveErrorsFiltered(ERROR_LIST, 10))
+    }, 4000)
+    return () => clearInterval(interval)
+    */
+  }, [isConnected])
