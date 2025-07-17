@@ -1,3 +1,7 @@
+
+
+// FileName: MultipleFiles/history-view.js
+// FileContents:
 "use client"
 
 import { useState, useEffect } from "react"
@@ -9,8 +13,6 @@ import { calculateAlerts } from "./data-context"
 export default function HistoryView() {
   const { history } = useData()
   const [searchTerm, setSearchTerm] = useState("")
-  // Remove category filter since only error alerts are shown
-  // const [selectedCategory, setSelectedCategory] = useState("all")
   const [currentPage, setCurrentPage] = useState(1)
   const [exportFormat, setExportFormat] = useState("json") // new state for export format
   const [now, setNow] = useState(Date.now()) // state to trigger re-render for dynamic time update
@@ -23,14 +25,6 @@ export default function HistoryView() {
 
     return () => clearInterval(interval)
   }, [])
-
-  // Remove categories array since category filter is removed
-  // const categories = [
-  //   { value: "all", label: "All Data" },
-  //   { value: "status615", label: "Status (0x615)" },
-  //   { value: "temp616", label: "Temperature (0x616)" },
-  //   { value: "measurement617", label: "Measurements (0x617)" },
-  // ]
 
   // First filter items that have critical or warning alerts
   const filteredByAlerts = history.filter((item) => {
@@ -81,38 +75,48 @@ export default function HistoryView() {
       }
       doc.text(`${index + 1}. Timestamp: ${new Date(item.timestamp).toLocaleString()}`, 10, y)
       y += 7
-      if (item.status615) {
-        doc.text("  Status (0x615):", 10, y)
-        y += 7
-        Object.entries(item.status615).forEach(([key, value]) => {
-          doc.text(`    ${key}: ${value}`, 10, y)
-          y += 7
-        })
+
+      const alerts = calculateAlerts(item).filter(alert => alert.type === "critical" || alert.type === "warning");
+      if (alerts.length > 0) {
+        doc.text("  Alerts:", 10, y);
+        y += 7;
+        alerts.forEach(alert => {
+          doc.text(`    - ${alert.category}: ${alert.message}`, 10, y);
+          y += 7;
+        });
       }
-      if (item.temp616) {
-        doc.text("  Temperature (0x616):", 10, y)
-        y += 7
-        Object.entries(item.temp616).forEach(([key, value]) => {
-          doc.text(`    ${key}: ${value}`, 10, y)
-          y += 7
-        })
-      }
-      if (item.measurement617) {
-        doc.text("  Measurements (0x617):", 10, y)
-        y += 7
-        Object.entries(item.measurement617).forEach(([key, value]) => {
-          doc.text(`    ${key}: ${value}`, 10, y)
-          y += 7
-        })
-      }
+
+      // Optionally include other data if needed, but the request focuses on alerts
+      // if (item.status615) {
+      //   doc.text("  Status (0x615):", 10, y)
+      //   y += 7
+      //   Object.entries(item.status615).forEach(([key, value]) => {
+      //     doc.text(`    ${key}: ${value}`, 10, y)
+      //     y += 7
+      //   })
+      // }
+      // if (item.temp616) {
+      //   doc.text("  Temperature (0x616):", 10, y)
+      //   y += 7
+      //   Object.entries(item.temp616).forEach(([key, value]) => {
+      //     doc.text(`    ${key}: ${value}`, 10, y)
+      //     y += 7
+      //   })
+      // }
+      // if (item.measurement617) {
+      //   doc.text("  Measurements (0x617):", 10, y)
+      //   y += 7
+      //   Object.entries(item.measurement617).forEach(([key, value]) => {
+      //     doc.text(`    ${key}: ${value}`, 10, y)
+      //     y += 7
+      //   })
+      // }
       y += 5
     })
     doc.save(`can-data-${new Date().toISOString().split("T")[0]}.pdf`)
   }
 
   const renderDataSection = (data, title, category) => {
-    // Remove category filter check since category filter is removed
-    // if (selectedCategory !== "all" && selectedCategory !== category) return null
     if (!data) return null
 
     return (
@@ -152,19 +156,6 @@ export default function HistoryView() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
-          {/* Remove category filter dropdown since only error alerts are shown */}
-          {/* <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="category-filter"
-          >
-            {categories.map((cat) => (
-              <option key={cat.value} value={cat.value}>
-                {cat.label}
-              </option>
-            ))}
-          </select> */}
 
           <select
             value={exportFormat}
@@ -210,7 +201,7 @@ export default function HistoryView() {
                   <div className="alerts-list">
                     {alerts.map(alert => (
                       <div key={alert.id} className={`alert-item alert-${alert.type}`}>
-                        <strong>{alert.category}:</strong> {alert.message}
+                        <strong>{alert.category || alert.code}:</strong> {alert.message}
                       </div>
                     ))}
                   </div>
@@ -464,6 +455,31 @@ export default function HistoryView() {
         .page-numbers {
           display: flex;
           gap: 0.5rem;
+        }
+
+        .alerts-list {
+          margin-top: 1rem;
+          border-top: 1px solid rgba(34, 197, 94, 0.2);
+          padding-top: 1rem;
+        }
+
+        .alert-item {
+          padding: 0.5rem;
+          margin-bottom: 0.5rem;
+          border-left: 4px solid;
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 4px;
+          font-size: 0.9rem;
+        }
+
+        .alert-item.alert-critical {
+          border-left-color: #ef4444;
+          background: rgba(239, 68, 68, 0.1);
+        }
+
+        .alert-item.alert-warning {
+          border-left-color: #f59e0b;
+          background: rgba(245, 158, 11, 0.1);
         }
 
         @media (max-width: 768px) {

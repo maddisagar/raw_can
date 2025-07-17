@@ -1,3 +1,5 @@
+// FileName: MultipleFiles/data-context.js
+// FileContents:
 "use client"
 
 import { createContext, useContext, useState, useEffect, useMemo, useRef } from "react"
@@ -111,7 +113,13 @@ export const DataProvider = ({ children }) => {
     faults: {},
   })
   const [displayData, setDisplayData] = useState(null) // New state for controlling display duration
-  const [history, setHistory] = useState([])
+  const [history, setHistory] = useState(() => {
+    if (typeof window !== "undefined") {
+      const storedHistory = localStorage.getItem("canHistory")
+      return storedHistory ? JSON.parse(storedHistory) : []
+    }
+    return []
+  })
   const [dailyReports, setDailyReports] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("dailyReports")
@@ -154,6 +162,12 @@ export const DataProvider = ({ children }) => {
   }, [dailyReports])
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("canHistory", JSON.stringify(history))
+    }
+  }, [history])
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
 
     let socket = null;
@@ -191,7 +205,7 @@ export const DataProvider = ({ children }) => {
                   ...prevData,
                   ...message,
                 }));
-                setHistory((prevHistory) => [...prevHistory, message]);
+                // History is now updated via the CAN frame decoding path
               } else if (
                 typeof message.id === "number" &&
                 typeof message.dlc === "number" &&
@@ -206,12 +220,14 @@ export const DataProvider = ({ children }) => {
                     decodedDataQueueRef.lastDecodeTime = now;
                     setCurrentData((prevData) => {
                       const merged = mergeDecodedSignals(prevData, decodedSignals, message.id);
+                      const newTimestamp = new Date().toISOString();
+                      // Capture the full state for history
+                      setHistory((prevHistory) => [...prevHistory, { ...merged, timestamp: newTimestamp }]);
                       return {
                         ...merged,
-                        timestamp: new Date().toISOString(),
+                        timestamp: newTimestamp,
                       };
                     });
-                    setHistory((prevHistory) => [...prevHistory, { ...decodedSignals, timestamp: new Date().toISOString() }]);
                     setDisplayData(decodedSignals); // Set display data to show for 700ms
                     // Clear display data after 700ms
                     if (decodedDataQueueRef.displayTimeout) {
@@ -276,9 +292,11 @@ export const DataProvider = ({ children }) => {
     const dayData = history.filter((item) => item.timestamp.startsWith(date))
     if (dayData.length === 0) return null
 
+    // Calculate critical alerts count based on the alerts generated for each history item
     const criticalAlertsCount = dayData.reduce((count, item) => {
-      return count + (item.status615?.LimpHomeMode ? 1 : 0)
-    }, 0)
+      const alerts = calculateAlerts(item);
+      return count + alerts.filter(alert => alert.type === "critical").length;
+    }, 0);
 
     const systemModesCounts = {
       regenMode: dayData.reduce((sum, item) => sum + (item.status615?.RegenMode ? 1 : 0), 0),
