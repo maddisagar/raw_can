@@ -19,9 +19,8 @@ export const useData = () => {
   return context
 }
 
-const getWebSocketUrl = () => {
-  return "ws://192.168.137.57:81"
-}
+import { createWebSocket } from "./websocketurl"
+
 
 // Helper function to merge decoded signals into currentData categories
 function mergeDecodedSignals(currentData, decodedSignals, messageID) {
@@ -183,11 +182,10 @@ export const DataProvider = ({ children }) => {
         return;
       }
 
-      const wsUrl = getWebSocketUrl();
-      console.log("Attempting WebSocket connection to:", wsUrl);
-      socket = new WebSocket(wsUrl);
+      socket = createWebSocket();
+      if (!socket) return;
 
-      socket.onopen = () => {
+      const onOpen = () => {
         console.log("✅ WebSocket connected");
         setIsConnected(true);
         if (reconnectInterval) {
@@ -196,36 +194,30 @@ export const DataProvider = ({ children }) => {
         }
       };
 
-      socket.onmessage = (event) => {
+      const onMessage = (event) => {
         console.log("WebSocket message received:", event.data);
         try {
-          // Check if event.data is a JSON string before parsing
           if (event.data && (event.data.startsWith("{") || event.data.startsWith("["))) {
             const message = JSON.parse(event.data);
             if (message && typeof message === "object") {
               if (message.timestamp) {
-                // Existing handling for messages with timestamp
                 setCurrentData((prevData) => ({
                   ...prevData,
                   ...message,
                 }));
-                // History is now updated via the CAN frame decoding path
               } else if (
                 typeof message.id === "number" &&
                 typeof message.dlc === "number" &&
                 Array.isArray(message.data)
               ) {
-                // New handling for raw CAN frames
                 const decodedSignals = decodeCANFrame(message.id, message.data);
                 if (decodedSignals) {
-                  // Throttle decoding to 10ms using a timestamp check (was 50ms)
                   const now = Date.now();
                   if (!decodedDataQueueRef.lastDecodeTime || now - decodedDataQueueRef.lastDecodeTime >= 10) {
                     decodedDataQueueRef.lastDecodeTime = now;
                     setCurrentData((prevData) => {
                       const merged = mergeDecodedSignals(prevData, decodedSignals, message.id);
                       const newTimestamp = new Date().toISOString();
-                      // Limit history to last 200 entries
                       setHistory((prevHistory) => {
                         const updated = [...prevHistory, { ...merged, timestamp: newTimestamp }];
                         return updated.length > 200 ? updated.slice(-200) : updated;
@@ -235,8 +227,7 @@ export const DataProvider = ({ children }) => {
                         timestamp: newTimestamp,
                       };
                     });
-                    setDisplayData(decodedSignals); // Set display data to show for 700ms
-                    // Clear display data after 700ms
+                    setDisplayData(decodedSignals);
                     if (decodedDataQueueRef.displayTimeout) {
                       clearTimeout(decodedDataQueueRef.displayTimeout);
                     }
@@ -254,7 +245,6 @@ export const DataProvider = ({ children }) => {
               console.warn("Received non-data WebSocket message:", event.data);
             }
           } else {
-            // Handle non-JSON messages gracefully, e.g., ignore or log
             console.warn("Received non-JSON WebSocket message:", event.data);
           }
         } catch (error) {
@@ -262,7 +252,7 @@ export const DataProvider = ({ children }) => {
         }
       };
 
-      socket.onerror = (error) => {
+      const onError = (error) => {
         if (error && error.message) {
           console.error("WebSocket error:", error.message);
         } else {
@@ -270,10 +260,9 @@ export const DataProvider = ({ children }) => {
         }
       };
 
-      socket.onclose = (event) => {
+      const onClose = (event) => {
         console.log("❌ WebSocket closed:", event.reason);
         setIsConnected(false);
-        // Start rapid reconnection attempts if not already running
         if (!reconnectInterval) {
           reconnectInterval = setInterval(() => {
             if (!socket || socket.readyState === WebSocket.CLOSED) {
@@ -282,9 +271,13 @@ export const DataProvider = ({ children }) => {
           }, 10);
         }
       };
+
+      socket.addEventListener("open", onOpen);
+      socket.addEventListener("message", onMessage);
+      socket.addEventListener("error", onError);
+      socket.addEventListener("close", onClose);
     };
 
-    // Start the initial connection
     connectWebSocket();
 
     return () => {
