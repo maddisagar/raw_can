@@ -1,6 +1,5 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
+import { useData } from "../data-context"
 
 interface DataPoint {
   time: number
@@ -11,57 +10,38 @@ export default function CtlrTemp1() {
   const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
   const [currentTime, setCurrentTime] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const { currentData, isConnected } = useData();
 
   // Graph dimensions
-  const width = 600
-  const height = 300
+  const width = 480
+  const height = 250
   const padding = 40
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
 
-  // Temperature range (20°C to 100°C)
-  const minTemp = 20
+  // Temperature range (0°C to 100°C)
+  const minTemp = 0
   const maxTemp = 100
   const timeWindow = 20 // Show 20 seconds
 
   useEffect(() => {
-    // Generate initial data point
-    const initialTemp = 45 + Math.random() * 20 // Start around 45-65°C
-    setDataPoints([{ time: 0, temperature: initialTemp }])
+    // Only add new data point when CAN data updates
+    if (!isConnected || !currentData?.temp616?.CtlrTemp1) return;
 
-    // Start continuous plotting
-    intervalRef.current = setInterval(() => {
-      setCurrentTime((prev) => {
-        const newTime = prev + 1
-
-        // Generate new temperature with some variation
-        const lastTemp = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].temperature : 50
-        const variation = (Math.random() - 0.5) * 10 // ±5°C variation
-        const newTemp = Math.max(minTemp, Math.min(maxTemp, lastTemp + variation))
-
-        setDataPoints((prevPoints) => {
-          const newPoint = { time: newTime, temperature: newTemp }
-
-          if (newTime <= timeWindow) {
-            // Still within initial 20 seconds
-            return [...prevPoints, newPoint]
-          } else {
-            // Shift window - keep last 20 seconds
-            const filteredPoints = prevPoints.filter((point) => point.time > newTime - timeWindow)
-            return [...filteredPoints, newPoint]
-          }
-        })
-
-        return newTime
-      })
-    }, 1000)
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
+    setDataPoints((prevPoints) => {
+      const newTime = prevPoints.length > 0 ? prevPoints[prevPoints.length - 1].time + 1 : 0;
+      const newTemp = currentData.temp616.CtlrTemp1;
+      const newPoint = { time: newTime, temperature: newTemp };
+      if (newTime <= timeWindow) {
+        return [...prevPoints, newPoint];
+      } else {
+        const filteredPoints = prevPoints.filter((point) => point.time > newTime - timeWindow);
+        return [...filteredPoints, newPoint];
       }
-    }
-  }, [])
+    });
+    setCurrentTime((prev) => prev + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentData?.temp616?.CtlrTemp1, isConnected]);
 
   // Convert data coordinates to SVG coordinates
   const getX = (time: number) => {
@@ -94,23 +74,29 @@ export default function CtlrTemp1() {
   // Get current temperature
   const currentTemp = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].temperature : 0
 
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Controller Temp 1 Monitor</h2>
+          <div className="text-base font-semibold text-gray-900">Waiting for CAN connection...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] border border-gray-100">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Controller Temp 1 Monitor</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Controller Temp 1 Monitor</h2>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600">Live Data</span>
-            </div>
-            <div className="text-lg font-semibold text-gray-900">{currentTemp.toFixed(1)}°C</div>
-            <div className="text-sm text-gray-500">Time: {currentTime}s</div>
+            <div className="text-base font-semibold text-gray-900">{`${currentTemp.toFixed(1)}°C`}</div>
           </div>
         </div>
 
         <div className="relative">
-          <svg width={width} height={height} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+          <svg width={480} height={250} className="border border-gray-200 rounded bg-white overflow-visible" style={{ display: 'block', margin: '0 auto' }}>
             {/* Grid lines */}
             <defs>
               <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
@@ -120,18 +106,18 @@ export default function CtlrTemp1() {
             <rect width="100%" height="100%" fill="url(#grid)" />
 
             {/* Y-axis labels */}
-            {[20, 40, 60, 80, 100].map((temp) => (
+            {[0, 20, 40, 60, 80, 100].map((temp) => (
               <g key={temp}>
                 <line
-                  x1={padding}
-                  y1={getY(temp)}
-                  x2={width - padding}
-                  y2={getY(temp)}
+                  x1={40}
+                  y1={padding + (1 - (temp - minTemp) / (maxTemp - minTemp)) * (250 - 2 * padding)}
+                  x2={480 - 40}
+                  y2={padding + (1 - (temp - minTemp) / (maxTemp - minTemp)) * (250 - 2 * padding)}
                   stroke="#e5e7eb"
                   strokeWidth="1"
                   strokeDasharray="2,2"
                 />
-                <text x={padding - 10} y={getY(temp) + 4} textAnchor="end" className="text-xs fill-gray-500">
+                <text x={40 - 10} y={padding + (1 - (temp - minTemp) / (maxTemp - minTemp)) * (250 - 2 * padding) + 4} textAnchor="end" fontSize="11" fill="#6b7280">
                   {temp}°C
                 </text>
               </g>
@@ -141,21 +127,21 @@ export default function CtlrTemp1() {
             {[0, 5, 10, 15, 20].map((time) => (
               <g key={time}>
                 <line
-                  x1={padding + (time / timeWindow) * graphWidth}
-                  y1={padding}
-                  x2={padding + (time / timeWindow) * graphWidth}
-                  y2={height - padding}
+                  x1={40 + (time / 20) * (480 - 2 * 40)}
+                  y1={40}
+                  x2={40 + (time / 20) * (480 - 2 * 40)}
+                  y2={250 - 40}
                   stroke="#e5e7eb"
                   strokeWidth="1"
                   strokeDasharray="2,2"
                 />
                 <text
-                  x={padding + (time / timeWindow) * graphWidth}
-                  y={height - padding + 20}
+                  x={40 + (time / 20) * (480 - 2 * 40)}
+                  y={250 - 40 + 20}
                   textAnchor="middle"
                   className="text-xs fill-gray-500"
                 >
-                  {currentTime <= timeWindow ? time : currentTime - timeWindow + time}s
+                  {currentTime <= 20 ? time : currentTime - 20 + time}s
                 </text>
               </g>
             ))}
@@ -164,26 +150,26 @@ export default function CtlrTemp1() {
             <path
               d={createPath()}
               fill="none"
-              stroke="#3b82f6"
+              stroke="#1d4ed8"
               strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
               className="drop-shadow-sm"
               style={{
-                filter: "drop-shadow(0 2px 4px rgba(59, 130, 246, 0.2))",
+                filter: "drop-shadow(0 2px 4px rgba(29, 78, 216, 0.2))",
               }}
             />
 
             {/* Data points */}
             {dataPoints
-              .filter((point) => currentTime <= timeWindow || point.time > currentTime - timeWindow)
+              .filter((point) => currentTime <= 20 || point.time > currentTime - 20)
               .map((point, index) => (
                 <g key={`${point.time}-${index}`}>
                   <circle
                     cx={getX(point.time)}
                     cy={getY(point.temperature)}
                     r="4"
-                    fill="#3b82f6"
+                    fill="#1d4ed8"
                     stroke="white"
                     strokeWidth="2"
                     className="transition-all duration-300 hover:r-6 cursor-pointer"
@@ -194,7 +180,7 @@ export default function CtlrTemp1() {
                     cy={getY(point.temperature)}
                     r="12"
                     fill="transparent"
-                    className="hover:fill-blue-500 hover:fill-opacity-10 cursor-pointer transition-all duration-200"
+                    className="hover:fill-blue-700 hover:fill-opacity-10 cursor-pointer transition-all duration-200"
                   >
                     <title>{`Time: ${point.time}s, Temp: ${point.temperature.toFixed(1)}°C`}</title>
                   </circle>
@@ -207,25 +193,18 @@ export default function CtlrTemp1() {
                 cx={getX(dataPoints[dataPoints.length - 1].time)}
                 cy={getY(dataPoints[dataPoints.length - 1].temperature)}
                 r="6"
-                fill="#3b82f6"
+                fill="#1d4ed8"
                 stroke="white"
                 strokeWidth="3"
                 className="animate-pulse"
                 style={{
-                  filter: "drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))",
+                  filter: "drop-shadow(0 0 8px rgba(29, 78, 216, 0.6))",
                 }}
               />
             )}
           </svg>
         </div>
-
-        <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-          <span>
-            Temperature Range: {minTemp}°C - {maxTemp}°C
-          </span>
-          <span>Update Interval: 1s</span>
-        </div>
       </div>
     </div>
-  )
+  );
 }

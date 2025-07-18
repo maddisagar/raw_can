@@ -66,7 +66,7 @@ if (mode === "individual" || fullView) {
           .two-graphs-row {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
+            gap: 2rem;
             padding: 1rem;
             background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
             border-radius: 16px;
@@ -77,81 +77,37 @@ if (mode === "individual" || fullView) {
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             background: white;
+            height: 100%;
+            display: flex;
+            align-items: stretch;
           }
           .two-graphs-row :global(.shadow-md):hover {
             transform: translateY(-6px);
             box-shadow: 0 12px 24px rgba(0,0,0,0.25);
           }
           .two-graphs-row :global(.p-4) {
-            padding: 1.25rem !important;
-          }
-          .live-data {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-weight: 600;
-            font-size: 1rem;
-            color: #1e3a8a;
+            padding: 1.5rem !important;
+            height: 100%;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            user-select: none;
-            margin-bottom: 1rem;
+            justify-content: center;
           }
-          .live-data .dot {
-            width: 12px;
-            height: 12px;
-            background-color: #ef4444;
-            border-radius: 50%;
-            box-shadow: 0 0 6px 2px #ef4444;
-          }
-          .live-data .temp {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: #111827;
-          }
-          .live-data .time {
-            font-weight: 400;
-            font-size: 1rem;
-            color: #6b7280;
-          }
-          @media (max-width: 768px) {
+          @media (max-width: 900px) {
             .two-graphs-row {
               grid-template-columns: 1fr;
               padding: 0.5rem;
               gap: 1rem;
             }
-            .live-data {
-              font-size: 0.875rem;
-              gap: 0.3rem;
-              margin-bottom: 0.75rem;
-            }
-            .live-data .temp {
-              font-size: 1rem;
-            }
-            .live-data .time {
-              font-size: 0.875rem;
-            }
-            .live-data .dot {
-              width: 10px;
-              height: 10px;
-            }
           }
         `}</style>
         <div className="two-graphs-row">
-          <Card className="shadow-md"><CardContent className="p-4"><CtlrTemp1 /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><CtlrTemp2 /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><CtlrTemp /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><MtrTemp /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><AcCurrMeaRms /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><DcCurrEstd /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><DcBusVolt /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><MtrSpd /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><ThrotVolt /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><LimpHomeMode /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><EcoBoost /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><RegenMode /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><Forward /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><Reverse /></CardContent></Card>
-          <Card className="shadow-md"><CardContent className="p-4"><Brake /></CardContent></Card>
+          {[CtlrTemp1, CtlrTemp2, CtlrTemp, MtrTemp, AcCurrMeaRms, DcCurrEstd, DcBusVolt, MtrSpd, ThrotVolt, LimpHomeMode, EcoBoost, RegenMode, Forward, Reverse, Brake].map((GraphComp, idx) => (
+            <Card className="shadow-md" key={idx}>
+              <CardContent className="p-4">
+                <GraphComp />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </>
     );

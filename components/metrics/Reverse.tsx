@@ -12,8 +12,8 @@ export default function ReverseGraph() {
   const [currentTime, setCurrentTime] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  const width = 600
-  const height = 200
+  const width = 480
+  const height = 250
   const padding = 40
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
@@ -77,18 +77,18 @@ export default function ReverseGraph() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] border border-gray-100">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Reverse Gear Monitor</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Reverse Gear Monitor</h2>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full animate-pulse ${currentValue === 1 ? 'bg-yellow-500' : 'bg-gray-400'}`}></div>
               <span className="text-sm text-gray-600">Live Data</span>
-            </div>
-            <div className={`text-lg font-semibold ${currentValue === 1 ? 'text-yellow-500' : 'text-gray-900'}`}>{currentValue === 1 ? 'ON' : 'OFF'}</div>
-            <div className="text-sm text-gray-500">Time: {currentTime}s</div>
+            </div> */}
+            <div className={`text-base font-semibold ${currentValue === 1 ? 'text-yellow-500' : 'text-gray-900'}`}>{currentValue === 1 ? 'ON' : 'OFF'}</div>
+            {/* <div className="text-sm text-gray-500">Time: {currentTime}s</div> */}
           </div>
         </div>
         <div className="relative">
-          <svg width={width} height={height} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+          <svg width={width} height={height} className="border border-gray-200 rounded bg-white overflow-visible" style={{ display: 'block', margin: '0 auto' }}>
             <defs>
               <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
                 <path d="M 40 0 L 0 0 0 30" fill="none" stroke="#f3f4f6" strokeWidth="1" />
@@ -106,7 +106,7 @@ export default function ReverseGraph() {
                   strokeWidth="1"
                   strokeDasharray="2,2"
                 />
-                <text x={padding - 10} y={getY(val) + 4} textAnchor="end" className="text-xs fill-gray-500">
+                <text x={padding - 10} y={getY(val) + 4} textAnchor="end" fontSize="11" fill="#6b7280">
                   {val === 1 ? 'ON' : 'OFF'}
                 </text>
               </g>
@@ -180,12 +180,12 @@ export default function ReverseGraph() {
             )}
           </svg>
         </div>
-        <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
+        {/* <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
           <span>
             Mode: OFF (0) / ON (1)
           </span>
           <span>Update Interval: 1s</span>
-        </div>
+        </div> */}
       </div>
     </div>
   )

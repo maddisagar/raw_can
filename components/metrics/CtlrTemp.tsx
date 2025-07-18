@@ -13,8 +13,8 @@ export default function CtlrTemp() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Graph dimensions
-  const width = 600
-  const height = 300
+  const width = 480
+  const height = 250
   const padding = 40
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
@@ -98,19 +98,19 @@ export default function CtlrTemp() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] border border-gray-100">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Controller Temp Avg Monitor</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Controller Temp Avg Monitor</h2>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
               <span className="text-sm text-gray-600">Live Data</span>
-            </div>
-            <div className="text-lg font-semibold text-gray-900">{currentTemp.toFixed(1)}°C</div>
-            <div className="text-sm text-gray-500">Time: {currentTime}s</div>
+            </div> */}
+            <div className="text-base font-semibold text-gray-900">{currentTemp.toFixed(1)}°C</div>
+            {/* <div className="text-sm text-gray-500">Time: {currentTime}s</div> */}
           </div>
         </div>
 
         <div className="relative">
-          <svg width={width} height={height} className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+          <svg width={width} height={height} className="border border-gray-200 rounded bg-white overflow-visible" style={{ display: 'block', margin: '0 auto' }}>
             {/* Grid lines */}
             <defs>
               <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
@@ -131,7 +131,7 @@ export default function CtlrTemp() {
                   strokeWidth="1"
                   strokeDasharray="2,2"
                 />
-                <text x={padding - 10} y={getY(temp) + 4} textAnchor="end" className="text-xs fill-gray-500">
+                <text x={padding - 10} y={getY(temp) + 4} textAnchor="end" fontSize="11" fill="#6b7280">
                   {temp}°C
                 </text>
               </g>
@@ -219,12 +219,12 @@ export default function CtlrTemp() {
           </svg>
         </div>
 
-        <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
+        {/* <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
           <span>
             Temperature Range: {minTemp}°C - {maxTemp}°C
           </span>
           <span>Update Interval: 1s</span>
-        </div>
+        </div> */}
       </div>
     </div>
   )
