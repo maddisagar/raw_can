@@ -18,7 +18,7 @@ export default function DcBusVoltGraph() {
   const graphHeight = height - 2 * padding
 
   const minValue = 0
-  const maxValue = 600
+  const maxValue = 80
   const timeWindow = 20
 
   const dataPoints = useMemo(() => {
@@ -91,7 +91,7 @@ export default function DcBusVoltGraph() {
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
 
-            {[0, 100, 200, 300, 400, 500, 600].map((val) => (
+            {[0, 20, 40, 60, 80].map((val) => (
               <g key={val}>
                 <line
                   x1={padding}
