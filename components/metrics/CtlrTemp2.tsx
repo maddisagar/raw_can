@@ -17,8 +17,8 @@ export default function CtlrTemp2() {
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
 
-  const minValue = 20
-  const maxValue = 100
+  const minValue = 0
+  const maxValue = 200
   const timeWindow = 20
 
   const dataPoints = useMemo(() => {
@@ -89,7 +89,7 @@ export default function CtlrTemp2() {
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
 
-            {[20, 40, 60, 80, 100].map((val) => (
+            {[0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200].map((val) => (
               <g key={val}>
                 <line
                   x1={padding}
