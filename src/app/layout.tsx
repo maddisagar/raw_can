@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { FooterProvider } from "../../components/FooterContext";
 import ClientLayoutContent from "./ClientLayoutContent";
+import { DataProvider } from "../../components/data-context";
 
 export const metadata: Metadata = {
   title: "DCU Dashboard",
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="antialiased root-body">
         <FooterProvider>
-          <ClientLayoutContent>{children}</ClientLayoutContent>
+          <DataProvider>
+            <ClientLayoutContent>{children}</ClientLayoutContent>
+          </DataProvider>
         </FooterProvider>
       </body>
     </html>

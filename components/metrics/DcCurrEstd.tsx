@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useMemo } from "react"
+import { useData } from "../data-context"
 
 interface DataPoint {
   time: number
@@ -8,9 +9,7 @@ interface DataPoint {
 }
 
 export default function DcCurrEstdGraph() {
-  const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-  const [currentTime, setCurrentTime] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const { history, isConnected } = useData()
 
   const width = 480
   const height = 250
@@ -18,41 +17,31 @@ export default function DcCurrEstdGraph() {
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
 
-  // DC Current range (0A to 300A)
   const minValue = 0
   const maxValue = 300
-  const timeWindow = 20
+  const timeWindow = 20 // in seconds
 
-  useEffect(() => {
-    const initialValue = 50 + Math.random() * 50 // Start around 50-100A
-    setDataPoints([{ time: 0, value: initialValue }])
-    intervalRef.current = setInterval(() => {
-      setCurrentTime((prev) => {
-        const newTime = prev + 1
-        const lastValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 75
-        const variation = (Math.random() - 0.5) * 30 // ±15A variation
-        const newValue = Math.max(minValue, Math.min(maxValue, lastValue + variation))
-        setDataPoints((prevPoints) => {
-          const newPoint = { time: newTime, value: newValue }
-          if (newTime <= timeWindow) {
-            return [...prevPoints, newPoint]
-          } else {
-            const filteredPoints = prevPoints.filter((point) => point.time > newTime - timeWindow)
-            return [...filteredPoints, newPoint]
-          }
-        })
-        return newTime
-      })
-    }, 1000)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [])
+  const points: DataPoint[] = useMemo(() => {
+    if (!history || history.length === 0) return []
+
+    return history
+      .filter((entry) => typeof entry.measurement617?.DcCurrEstd === "number")
+      .map((entry, index) => ({
+        time: index,
+        value: entry.measurement617.DcCurrEstd,
+      }))
+  }, [history])
+
+  const visiblePoints = useMemo(() => {
+    if (points.length === 0) return []
+
+    const maxTime = points[points.length - 1].time
+    return points.filter((point) => point.time >= maxTime - timeWindow)
+  }, [points])
 
   const getX = (time: number) => {
-    const displayTime = currentTime <= timeWindow ? time : time - (currentTime - timeWindow)
+    const maxTime = points.length > 0 ? points[points.length - 1].time : 0
+    const displayTime = maxTime <= timeWindow ? time : time - (maxTime - timeWindow)
     return padding + (displayTime / timeWindow) * graphWidth
   }
 
@@ -61,9 +50,6 @@ export default function DcCurrEstdGraph() {
   }
 
   const createPath = () => {
-    if (dataPoints.length < 2) return ""
-    const visiblePoints =
-      currentTime <= timeWindow ? dataPoints : dataPoints.filter((point) => point.time > currentTime - timeWindow)
     if (visiblePoints.length < 2) return ""
     let path = `M ${getX(visiblePoints[0].time)} ${getY(visiblePoints[0].value)}`
     for (let i = 1; i < visiblePoints.length; i++) {
@@ -72,7 +58,19 @@ export default function DcCurrEstdGraph() {
     return path
   }
 
-  const currentValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 0
+  const currentValue = visiblePoints.length > 0 ? visiblePoints[visiblePoints.length - 1].value : 0
+  const currentTime = visiblePoints.length > 0 ? visiblePoints[visiblePoints.length - 1].time : 0
+
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">DC Current Est Monitor</h2>
+          <div className="text-base font-semibold text-gray-900">Waiting for CAN connection...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
@@ -80,12 +78,7 @@ export default function DcCurrEstdGraph() {
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-1">DC Current Est Monitor</h2>
           <div className="flex items-center gap-4">
-            {/* <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-700 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600">Live Data</span>
-            </div> */}
             <div className="text-base font-semibold text-gray-900">{currentValue.toFixed(1)}A</div>
-            {/* <div className="text-sm text-gray-500">Time: {currentTime}s</div> */}
           </div>
         </div>
         <div className="relative">
@@ -112,27 +105,27 @@ export default function DcCurrEstdGraph() {
                 </text>
               </g>
             ))}
-            {[0, 5, 10, 15, 20].map((time) => (
-              <g key={time}>
+            {/* {[0, 5, 10, 15, 20].map((t) => (
+              <g key={t}>
                 <line
-                  x1={padding + (time / timeWindow) * graphWidth}
+                  x1={padding + (t / timeWindow) * graphWidth}
                   y1={padding}
-                  x2={padding + (time / timeWindow) * graphWidth}
+                  x2={padding + (t / timeWindow) * graphWidth}
                   y2={height - padding}
                   stroke="#e5e7eb"
                   strokeWidth="1"
                   strokeDasharray="2,2"
                 />
                 <text
-                  x={padding + (time / timeWindow) * graphWidth}
+                  x={padding + (t / timeWindow) * graphWidth}
                   y={height - padding + 20}
                   textAnchor="middle"
                   className="text-xs fill-gray-500"
                 >
-                  {currentTime <= timeWindow ? time : currentTime - timeWindow + time}s
+                  {currentTime <= timeWindow ? t : currentTime - timeWindow + t}s
                 </text>
               </g>
-            ))}
+            ))} */}
             <path
               d={createPath()}
               fill="none"
@@ -143,34 +136,32 @@ export default function DcCurrEstdGraph() {
               className="drop-shadow-sm"
               style={{ filter: "drop-shadow(0 2px 4px rgba(22, 163, 74, 0.2))" }}
             />
-            {dataPoints
-              .filter((point) => currentTime <= timeWindow || point.time > currentTime - timeWindow)
-              .map((point, index) => (
-                <g key={`${point.time}-${index}`}>
-                  <circle
-                    cx={getX(point.time)}
-                    cy={getY(point.value)}
-                    r="4"
-                    fill="#16a34a"
-                    stroke="white"
-                    strokeWidth="2"
-                    className="transition-all duration-300 hover:r-6 cursor-pointer"
-                  />
-                  <circle
-                    cx={getX(point.time)}
-                    cy={getY(point.value)}
-                    r="12"
-                    fill="transparent"
-                    className="hover:fill-green-700 hover:fill-opacity-10 cursor-pointer transition-all duration-200"
-                  >
-                    <title>{`Time: ${point.time}s, Current: ${point.value.toFixed(1)}A`}</title>
-                  </circle>
-                </g>
-              ))}
-            {dataPoints.length > 0 && (
+            {visiblePoints.map((point, index) => (
+              <g key={`${point.time}-${index}`}>
+                <circle
+                  cx={getX(point.time)}
+                  cy={getY(point.value)}
+                  r="4"
+                  fill="#16a34a"
+                  stroke="white"
+                  strokeWidth="2"
+                  className="transition-all duration-300 hover:r-6 cursor-pointer"
+                />
+                <circle
+                  cx={getX(point.time)}
+                  cy={getY(point.value)}
+                  r="12"
+                  fill="transparent"
+                  className="hover:fill-green-700 hover:fill-opacity-10 cursor-pointer transition-all duration-200"
+                >
+                  <title>{`Time: ${point.time}s, Current: ${point.value.toFixed(1)}A`}</title>
+                </circle>
+              </g>
+            ))}
+            {visiblePoints.length > 0 && (
               <circle
-                cx={getX(dataPoints[dataPoints.length - 1].time)}
-                cy={getY(dataPoints[dataPoints.length - 1].value)}
+                cx={getX(visiblePoints[visiblePoints.length - 1].time)}
+                cy={getY(visiblePoints[visiblePoints.length - 1].value)}
                 r="6"
                 fill="#16a34a"
                 stroke="white"
@@ -181,12 +172,6 @@ export default function DcCurrEstdGraph() {
             )}
           </svg>
         </div>
-        {/* <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-          <span>
-            Current Range: {minValue}A - {maxValue}A
-          </span>
-          <span>Update Interval: 1s</span>
-        </div> */}
       </div>
     </div>
   )

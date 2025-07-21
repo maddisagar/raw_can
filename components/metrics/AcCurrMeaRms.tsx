@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useMemo } from "react"
+import { useData } from "../data-context"
 
 interface DataPoint {
   time: number
@@ -8,9 +9,7 @@ interface DataPoint {
 }
 
 export default function AcCurrMeaRmsGraph() {
-  const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-  const [currentTime, setCurrentTime] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const { history, isConnected } = useData()
 
   const width = 480
   const height = 250
@@ -18,38 +17,26 @@ export default function AcCurrMeaRmsGraph() {
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
 
-  // AC Current range (0A to 300A)
+  // AC Current range
   const minValue = 0
   const maxValue = 300
   const timeWindow = 20
 
-  useEffect(() => {
-    const initialValue = 50 + Math.random() * 50 // Start around 50-100A
-    setDataPoints([{ time: 0, value: initialValue }])
-    intervalRef.current = setInterval(() => {
-      setCurrentTime((prev) => {
-        const newTime = prev + 1
-        const lastValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 75
-        const variation = (Math.random() - 0.5) * 30 // ±15A variation
-        const newValue = Math.max(minValue, Math.min(maxValue, lastValue + variation))
-        setDataPoints((prevPoints) => {
-          const newPoint = { time: newTime, value: newValue }
-          if (newTime <= timeWindow) {
-            return [...prevPoints, newPoint]
-          } else {
-            const filteredPoints = prevPoints.filter((point) => point.time > newTime - timeWindow)
-            return [...filteredPoints, newPoint]
-          }
-        })
-        return newTime
+  const dataPoints = useMemo(() => {
+    if (!history?.length) return []
+    return history
+      .map((entry, index) => ({
+        time: index,
+        value: entry?.measurement617?.AcCurrMeaRms ?? 0,
+      }))
+      .filter((point, _, all) => {
+        const latestTime = all.length - 1
+        return point.time > latestTime - timeWindow
       })
-    }, 1000)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [])
+  }, [history])
+
+  const currentTime = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].time : 0
+  const currentValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 0
 
   const getX = (time: number) => {
     const displayTime = currentTime <= timeWindow ? time : time - (currentTime - timeWindow)
@@ -62,31 +49,30 @@ export default function AcCurrMeaRmsGraph() {
 
   const createPath = () => {
     if (dataPoints.length < 2) return ""
-    const visiblePoints =
-      currentTime <= timeWindow ? dataPoints : dataPoints.filter((point) => point.time > currentTime - timeWindow)
-    if (visiblePoints.length < 2) return ""
-    let path = `M ${getX(visiblePoints[0].time)} ${getY(visiblePoints[0].value)}`
-    for (let i = 1; i < visiblePoints.length; i++) {
-      path += ` L ${getX(visiblePoints[i].time)} ${getY(visiblePoints[i].value)}`
+    let path = `M ${getX(dataPoints[0].time)} ${getY(dataPoints[0].value)}`
+    for (let i = 1; i < dataPoints.length; i++) {
+      path += ` L ${getX(dataPoints[i].time)} ${getY(dataPoints[i].value)}`
     }
     return path
   }
 
-  const currentValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 0
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">AC Current RMS Monitor</h2>
+          <div className="text-base font-semibold text-gray-900">Waiting for CAN connection...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] border border-gray-100">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-1">AC Current RMS Monitor</h2>
-          <div className="flex items-center gap-4">
-            {/* <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600">Live Data</span>
-            </div> */}
-            <div className="text-base font-semibold text-gray-900">{currentValue.toFixed(1)}A</div>
-            {/* <div className="text-sm text-gray-500">Time: {currentTime}s</div> */}
-          </div>
+          <div className="text-base font-semibold text-gray-900">{currentValue.toFixed(1)}A</div>
         </div>
         <div className="relative">
           <svg width={width} height={height} className="border border-gray-200 rounded bg-white overflow-visible" style={{ display: 'block', margin: '0 auto' }}>
@@ -112,7 +98,7 @@ export default function AcCurrMeaRmsGraph() {
                 </text>
               </g>
             ))}
-            {[0, 5, 10, 15, 20].map((time) => (
+            {/* {[0, 5, 10, 15, 20].map((time) => (
               <g key={time}>
                 <line
                   x1={padding + (time / timeWindow) * graphWidth}
@@ -132,7 +118,7 @@ export default function AcCurrMeaRmsGraph() {
                   {currentTime <= timeWindow ? time : currentTime - timeWindow + time}s
                 </text>
               </g>
-            ))}
+            ))} */}
             <path
               d={createPath()}
               fill="none"
@@ -143,30 +129,28 @@ export default function AcCurrMeaRmsGraph() {
               className="drop-shadow-sm"
               style={{ filter: "drop-shadow(0 2px 4px rgba(34, 197, 94, 0.2))" }}
             />
-            {dataPoints
-              .filter((point) => currentTime <= timeWindow || point.time > currentTime - timeWindow)
-              .map((point, index) => (
-                <g key={`${point.time}-${index}`}>
-                  <circle
-                    cx={getX(point.time)}
-                    cy={getY(point.value)}
-                    r="4"
-                    fill="#22c55e"
-                    stroke="white"
-                    strokeWidth="2"
-                    className="transition-all duration-300 hover:r-6 cursor-pointer"
-                  />
-                  <circle
-                    cx={getX(point.time)}
-                    cy={getY(point.value)}
-                    r="12"
-                    fill="transparent"
-                    className="hover:fill-green-500 hover:fill-opacity-10 cursor-pointer transition-all duration-200"
-                  >
-                    <title>{`Time: ${point.time}s, Current: ${point.value.toFixed(1)}A`}</title>
-                  </circle>
-                </g>
-              ))}
+            {dataPoints.map((point, index) => (
+              <g key={`${point.time}-${index}`}>
+                <circle
+                  cx={getX(point.time)}
+                  cy={getY(point.value)}
+                  r="4"
+                  fill="#22c55e"
+                  stroke="white"
+                  strokeWidth="2"
+                  className="transition-all duration-300 hover:r-6 cursor-pointer"
+                />
+                <circle
+                  cx={getX(point.time)}
+                  cy={getY(point.value)}
+                  r="12"
+                  fill="transparent"
+                  className="hover:fill-green-500 hover:fill-opacity-10 cursor-pointer transition-all duration-200"
+                >
+                  <title>{`Time: ${point.time}s, Current: ${point.value.toFixed(1)}A`}</title>
+                </circle>
+              </g>
+            ))}
             {dataPoints.length > 0 && (
               <circle
                 cx={getX(dataPoints[dataPoints.length - 1].time)}
@@ -181,12 +165,6 @@ export default function AcCurrMeaRmsGraph() {
             )}
           </svg>
         </div>
-        {/* <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-          <span>
-            Current Range: {minValue}A - {maxValue}A
-          </span>
-          <span>Update Interval: 1s</span>
-        </div> */}
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useMemo } from "react"
+import { useData } from "../data-context"
 
 interface DataPoint {
   time: number
@@ -8,9 +9,7 @@ interface DataPoint {
 }
 
 export default function ThrotVoltGraph() {
-  const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-  const [currentTime, setCurrentTime] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const { history, isConnected } = useData()
 
   const width = 480
   const height = 250
@@ -18,38 +17,21 @@ export default function ThrotVoltGraph() {
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
 
-  // Throttle Voltage range (0V to 5V)
   const minValue = 0
   const maxValue = 5
   const timeWindow = 20
 
-  useEffect(() => {
-    const initialValue = 1 + Math.random() * 2 // Start around 1-3V
-    setDataPoints([{ time: 0, value: initialValue }])
-    intervalRef.current = setInterval(() => {
-      setCurrentTime((prev) => {
-        const newTime = prev + 1
-        const lastValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 2
-        const variation = (Math.random() - 0.5) * 0.5 // ±0.25V variation
-        const newValue = Math.max(minValue, Math.min(maxValue, lastValue + variation))
-        setDataPoints((prevPoints) => {
-          const newPoint = { time: newTime, value: newValue }
-          if (newTime <= timeWindow) {
-            return [...prevPoints, newPoint]
-          } else {
-            const filteredPoints = prevPoints.filter((point) => point.time > newTime - timeWindow)
-            return [...filteredPoints, newPoint]
-          }
-        })
-        return newTime
-      })
-    }, 1000)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [])
+  const dataPoints = useMemo(() => {
+    if (!isConnected || !history || history.length === 0) return []
+    return history
+      .map((item, idx) => ({
+        time: idx,
+        value: item.measurement617?.ThrotVolt ?? 0,
+      }))
+      .filter((point) => typeof point.value === "number" && !isNaN(point.value))
+  }, [history, isConnected])
+
+  const currentTime = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].time : 0
 
   const getX = (time: number) => {
     const displayTime = currentTime <= timeWindow ? time : time - (currentTime - timeWindow)
@@ -63,7 +45,9 @@ export default function ThrotVoltGraph() {
   const createPath = () => {
     if (dataPoints.length < 2) return ""
     const visiblePoints =
-      currentTime <= timeWindow ? dataPoints : dataPoints.filter((point) => point.time > currentTime - timeWindow)
+      currentTime <= timeWindow
+        ? dataPoints
+        : dataPoints.filter((point) => point.time > currentTime - timeWindow)
     if (visiblePoints.length < 2) return ""
     let path = `M ${getX(visiblePoints[0].time)} ${getY(visiblePoints[0].value)}`
     for (let i = 1; i < visiblePoints.length; i++) {
@@ -74,18 +58,24 @@ export default function ThrotVoltGraph() {
 
   const currentValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 0
 
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Throttle Voltage Monitor</h2>
+          <div className="text-base font-semibold text-gray-900">Waiting for CAN connection...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] border border-gray-100">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-1">Throttle Voltage Monitor</h2>
           <div className="flex items-center gap-4">
-            {/* <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-cyan-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600">Live Data</span>
-            </div> */}
             <div className="text-base font-semibold text-gray-900">{currentValue.toFixed(2)} V</div>
-            {/* <div className="text-sm text-gray-500">Time: {currentTime}s</div> */}
           </div>
         </div>
         <div className="relative">
@@ -112,7 +102,7 @@ export default function ThrotVoltGraph() {
                 </text>
               </g>
             ))}
-            {[0, 5, 10, 15, 20].map((time) => (
+            {/* {[0, 5, 10, 15, 20].map((time) => (
               <g key={time}>
                 <line
                   x1={padding + (time / timeWindow) * graphWidth}
@@ -132,7 +122,7 @@ export default function ThrotVoltGraph() {
                   {currentTime <= timeWindow ? time : currentTime - timeWindow + time}s
                 </text>
               </g>
-            ))}
+            ))} */}
             <path
               d={createPath()}
               fill="none"
@@ -181,12 +171,6 @@ export default function ThrotVoltGraph() {
             )}
           </svg>
         </div>
-        {/* <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-          <span>
-            Voltage Range: {minValue} - {maxValue} V
-          </span>
-          <span>Update Interval: 1s</span>
-        </div> */}
       </div>
     </div>
   )

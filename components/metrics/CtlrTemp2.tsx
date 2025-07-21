@@ -1,98 +1,74 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useMemo } from "react"
+import { useData } from "../data-context"
 
 interface DataPoint {
   time: number
-  temperature: number
+  value: number
 }
 
 export default function CtlrTemp2() {
-  const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-  const [currentTime, setCurrentTime] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const { history, isConnected } = useData()
 
-  // Graph dimensions
   const width = 480
   const height = 250
   const padding = 40
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
 
-  // Temperature range (20°C to 100°C)
-  const minTemp = 20
-  const maxTemp = 100
-  const timeWindow = 20 // Show 20 seconds
+  const minValue = 20
+  const maxValue = 100
+  const timeWindow = 20
 
-  useEffect(() => {
-    // Generate initial data point
-    const initialTemp = 45 + Math.random() * 20 // Start around 45-65°C
-    setDataPoints([{ time: 0, temperature: initialTemp }])
+  const dataPoints = useMemo(() => {
+    if (!isConnected || !history || history.length === 0) return []
+    return history
+      .map((item, idx) => ({
+        time: idx,
+        value: item.temp616?.CtlrTemp2 ?? 0,
+      }))
+      .filter((point) => typeof point.value === "number" && !isNaN(point.value))
+  }, [history, isConnected])
 
-    // Start continuous plotting
-    intervalRef.current = setInterval(() => {
-      setCurrentTime((prev) => {
-        const newTime = prev + 1
+  const currentTime = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].time : 0
 
-        // Generate new temperature with some variation
-        const lastTemp = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].temperature : 50
-        const variation = (Math.random() - 0.5) * 10 // ±5°C variation
-        const newTemp = Math.max(minTemp, Math.min(maxTemp, lastTemp + variation))
-
-        setDataPoints((prevPoints) => {
-          const newPoint = { time: newTime, temperature: newTemp }
-
-          if (newTime <= timeWindow) {
-            // Still within initial 20 seconds
-            return [...prevPoints, newPoint]
-          } else {
-            // Shift window - keep last 20 seconds
-            const filteredPoints = prevPoints.filter((point) => point.time > newTime - timeWindow)
-            return [...filteredPoints, newPoint]
-          }
-        })
-
-        return newTime
-      })
-    }, 1000)
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [])
-
-  // Convert data coordinates to SVG coordinates
   const getX = (time: number) => {
     const displayTime = currentTime <= timeWindow ? time : time - (currentTime - timeWindow)
     return padding + (displayTime / timeWindow) * graphWidth
   }
 
-  const getY = (temperature: number) => {
-    return padding + (1 - (temperature - minTemp) / (maxTemp - minTemp)) * graphHeight
+  const getY = (value: number) => {
+    return padding + (1 - (value - minValue) / (maxValue - minValue)) * graphHeight
   }
 
-  // Create SVG path
   const createPath = () => {
     if (dataPoints.length < 2) return ""
-
     const visiblePoints =
-      currentTime <= timeWindow ? dataPoints : dataPoints.filter((point) => point.time > currentTime - timeWindow)
-
+      currentTime <= timeWindow
+        ? dataPoints
+        : dataPoints.filter((point) => point.time > currentTime - timeWindow)
     if (visiblePoints.length < 2) return ""
 
-    let path = `M ${getX(visiblePoints[0].time)} ${getY(visiblePoints[0].temperature)}`
-
+    let path = `M ${getX(visiblePoints[0].time)} ${getY(visiblePoints[0].value)}`
     for (let i = 1; i < visiblePoints.length; i++) {
-      path += ` L ${getX(visiblePoints[i].time)} ${getY(visiblePoints[i].temperature)}`
+      path += ` L ${getX(visiblePoints[i].time)} ${getY(visiblePoints[i].value)}`
     }
-
     return path
   }
 
-  // Get current temperature
-  const currentTemp = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].temperature : 0
+  const currentValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 0
+
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Controller Temp 2 Monitor</h2>
+          <div className="text-base font-semibold text-gray-900">Waiting for CAN connection...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
@@ -100,18 +76,12 @@ export default function CtlrTemp2() {
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-1">Controller Temp 2 Monitor</h2>
           <div className="flex items-center gap-4">
-            {/* <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-700 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600">Live Data</span>
-            </div> */}
-            <div className="text-base font-semibold text-gray-900">{currentTemp.toFixed(1)}°C</div>
-            {/* <div className="text-sm text-gray-500">Time: {currentTime}s</div> */}
+            <div className="text-base font-semibold text-gray-900">{currentValue.toFixed(1)}°C</div>
           </div>
         </div>
 
         <div className="relative">
           <svg width={width} height={height} className="border border-gray-200 rounded bg-white overflow-visible" style={{ display: 'block', margin: '0 auto' }}>
-            {/* Grid lines */}
             <defs>
               <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
                 <path d="M 40 0 L 0 0 0 30" fill="none" stroke="#f3f4f6" strokeWidth="1" />
@@ -119,48 +89,23 @@ export default function CtlrTemp2() {
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
 
-            {/* Y-axis labels */}
-            {[20, 40, 60, 80, 100].map((temp) => (
-              <g key={temp}>
+            {[20, 40, 60, 80, 100].map((val) => (
+              <g key={val}>
                 <line
                   x1={padding}
-                  y1={getY(temp)}
+                  y1={getY(val)}
                   x2={width - padding}
-                  y2={getY(temp)}
+                  y2={getY(val)}
                   stroke="#e5e7eb"
                   strokeWidth="1"
                   strokeDasharray="2,2"
                 />
-                <text x={padding - 10} y={getY(temp) + 4} textAnchor="end" fontSize="11" fill="#6b7280">
-                  {temp}°C
+                <text x={padding - 10} y={getY(val) + 4} textAnchor="end" fontSize="11" fill="#6b7280">
+                  {val}°C
                 </text>
               </g>
             ))}
 
-            {/* X-axis labels */}
-            {[0, 5, 10, 15, 20].map((time) => (
-              <g key={time}>
-                <line
-                  x1={padding + (time / timeWindow) * graphWidth}
-                  y1={padding}
-                  x2={padding + (time / timeWindow) * graphWidth}
-                  y2={height - padding}
-                  stroke="#e5e7eb"
-                  strokeWidth="1"
-                  strokeDasharray="2,2"
-                />
-                <text
-                  x={padding + (time / timeWindow) * graphWidth}
-                  y={height - padding + 20}
-                  textAnchor="middle"
-                  className="text-xs fill-gray-500"
-                >
-                  {currentTime <= timeWindow ? time : currentTime - timeWindow + time}s
-                </text>
-              </g>
-            ))}
-
-            {/* Main graph line */}
             <path
               d={createPath()}
               fill="none"
@@ -169,62 +114,48 @@ export default function CtlrTemp2() {
               strokeLinecap="round"
               strokeLinejoin="round"
               className="drop-shadow-sm"
-              style={{
-                filter: "drop-shadow(0 2px 4px rgba(29, 78, 216, 0.2))",
-              }}
+              style={{ filter: "drop-shadow(0 2px 4px rgba(29, 78, 216, 0.2))" }}
             />
 
-            {/* Data points */}
             {dataPoints
               .filter((point) => currentTime <= timeWindow || point.time > currentTime - timeWindow)
               .map((point, index) => (
                 <g key={`${point.time}-${index}`}>
                   <circle
                     cx={getX(point.time)}
-                    cy={getY(point.temperature)}
+                    cy={getY(point.value)}
                     r="4"
                     fill="#1d4ed8"
                     stroke="white"
                     strokeWidth="2"
                     className="transition-all duration-300 hover:r-6 cursor-pointer"
                   />
-                  {/* Hover tooltip */}
                   <circle
                     cx={getX(point.time)}
-                    cy={getY(point.temperature)}
+                    cy={getY(point.value)}
                     r="12"
                     fill="transparent"
                     className="hover:fill-blue-700 hover:fill-opacity-10 cursor-pointer transition-all duration-200"
                   >
-                    <title>{`Time: ${point.time}s, Temp: ${point.temperature.toFixed(1)}°C`}</title>
+                    <title>{`Time: ${point.time}s, Temp: ${point.value.toFixed(1)}°C`}</title>
                   </circle>
                 </g>
               ))}
 
-            {/* Current point highlight */}
             {dataPoints.length > 0 && (
               <circle
                 cx={getX(dataPoints[dataPoints.length - 1].time)}
-                cy={getY(dataPoints[dataPoints.length - 1].temperature)}
+                cy={getY(dataPoints[dataPoints.length - 1].value)}
                 r="6"
                 fill="#1d4ed8"
                 stroke="white"
                 strokeWidth="3"
                 className="animate-pulse"
-                style={{
-                  filter: "drop-shadow(0 0 8px rgba(29, 78, 216, 0.6))",
-                }}
+                style={{ filter: "drop-shadow(0 0 8px rgba(29, 78, 216, 0.6))" }}
               />
             )}
           </svg>
         </div>
-
-        {/* <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-          <span>
-            Temperature Range: {minTemp}°C - {maxTemp}°C
-          </span>
-          <span>Update Interval: 1s</span>
-        </div> */}
       </div>
     </div>
   )

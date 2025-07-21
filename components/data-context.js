@@ -108,13 +108,15 @@ function mergeDecodedSignals(currentData, decodedSignals, messageID) {
 }
 
 export const DataProvider = ({ children }) => {
-  const [currentData, setCurrentData] = useState({
+  const defaultData = {
     timestamp: new Date().toISOString(),
     status615: {},
     temp616: {},
     measurement617: {},
     faults: {},
-  })
+  }
+  const [currentData, setCurrentData] = useState(defaultData)
+  const lastDataTimeoutRef = useRef(null)
   const [displayData, setDisplayData] = useState(null) // New state for controlling display duration
   const [history, setHistory] = useState(() => {
     if (typeof window !== "undefined") {
@@ -205,6 +207,11 @@ export const DataProvider = ({ children }) => {
                   ...prevData,
                   ...message,
                 }));
+                // Reset the no-data timeout
+                if (lastDataTimeoutRef.current) clearTimeout(lastDataTimeoutRef.current)
+                lastDataTimeoutRef.current = setTimeout(() => {
+                  setCurrentData(defaultData)
+                }, 1000)
               } else if (
                 typeof message.id === "number" &&
                 typeof message.dlc === "number" &&
@@ -227,6 +234,11 @@ export const DataProvider = ({ children }) => {
                         timestamp: newTimestamp,
                       };
                     });
+                    // Reset the no-data timeout
+                    if (lastDataTimeoutRef.current) clearTimeout(lastDataTimeoutRef.current)
+                    lastDataTimeoutRef.current = setTimeout(() => {
+                      setCurrentData(defaultData)
+                    }, 1000)
                     setDisplayData(decodedSignals);
                     if (decodedDataQueueRef.displayTimeout) {
                       clearTimeout(decodedDataQueueRef.displayTimeout);
@@ -283,6 +295,7 @@ export const DataProvider = ({ children }) => {
     return () => {
       if (reconnectInterval) clearInterval(reconnectInterval);
       if (socket) socket.close();
+      if (lastDataTimeoutRef.current) clearTimeout(lastDataTimeoutRef.current);
     };
   }, []);
 

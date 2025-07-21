@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useMemo } from "react"
+import { useData } from "../data-context"
 
 interface DataPoint {
   time: number
@@ -8,9 +9,7 @@ interface DataPoint {
 }
 
 export default function MtrTempGraph() {
-  const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-  const [currentTime, setCurrentTime] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const { history, isConnected } = useData()
 
   const width = 480
   const height = 250
@@ -22,56 +21,54 @@ export default function MtrTempGraph() {
   const maxValue = 100
   const timeWindow = 20
 
-  useEffect(() => {
-    const initialValue = 45 + Math.random() * 20
-    setDataPoints([{ time: 0, value: initialValue }])
-    intervalRef.current = setInterval(() => {
-      setCurrentTime((prev) => {
-        const newTime = prev + 1
-        const lastValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 50
-        const variation = (Math.random() - 0.5) * 10
-        const newValue = Math.max(minValue, Math.min(maxValue, lastValue + variation))
-        setDataPoints((prevPoints) => {
-          const newPoint = { time: newTime, value: newValue }
-          if (newTime <= timeWindow) {
-            return [...prevPoints, newPoint]
-          } else {
-            const filteredPoints = prevPoints.filter((point) => point.time > newTime - timeWindow)
-            return [...filteredPoints, newPoint]
-          }
-        })
-        return newTime
-      })
-    }, 1000)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [])
+  // Build dataPoints from history
+  const dataPoints = useMemo(() => {
+    if (!isConnected || !history || history.length === 0) return [];
+    return history
+      .map((item, idx) => ({
+        time: idx,
+        value: item.temp616?.MtrTemp ?? 0,
+      }))
+      .filter((point) => typeof point.value === "number" && !isNaN(point.value));
+  }, [history, isConnected]);
+
+  const currentTime = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].time : 0;
 
   const getX = (time: number) => {
-    const displayTime = currentTime <= timeWindow ? time : time - (currentTime - timeWindow)
-    return padding + (displayTime / timeWindow) * graphWidth
-  }
+    const displayTime = currentTime <= timeWindow ? time : time - (currentTime - timeWindow);
+    return padding + (displayTime / timeWindow) * graphWidth;
+  };
 
   const getY = (value: number) => {
-    return padding + (1 - (value - minValue) / (maxValue - minValue)) * graphHeight
-  }
+    return padding + (1 - (value - minValue) / (maxValue - minValue)) * graphHeight;
+  };
 
   const createPath = () => {
-    if (dataPoints.length < 2) return ""
+    if (dataPoints.length < 2) return "";
     const visiblePoints =
-      currentTime <= timeWindow ? dataPoints : dataPoints.filter((point) => point.time > currentTime - timeWindow)
-    if (visiblePoints.length < 2) return ""
-    let path = `M ${getX(visiblePoints[0].time)} ${getY(visiblePoints[0].value)}`
+      currentTime <= timeWindow
+        ? dataPoints
+        : dataPoints.filter((point) => point.time > currentTime - timeWindow);
+    if (visiblePoints.length < 2) return "";
+    let path = `M ${getX(visiblePoints[0].time)} ${getY(visiblePoints[0].value)}`;
     for (let i = 1; i < visiblePoints.length; i++) {
-      path += ` L ${getX(visiblePoints[i].time)} ${getY(visiblePoints[i].value)}`
+      path += ` L ${getX(visiblePoints[i].time)} ${getY(visiblePoints[i].value)}`;
     }
-    return path
-  }
+    return path;
+  };
 
-  const currentValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 0
+  const currentValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 0;
+
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Motor Temperature Monitor</h2>
+          <div className="text-base font-semibold text-gray-900">Waiting for CAN connection...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
@@ -111,27 +108,7 @@ export default function MtrTempGraph() {
                 </text>
               </g>
             ))}
-            {[0, 5, 10, 15, 20].map((time) => (
-              <g key={time}>
-                <line
-                  x1={padding + (time / timeWindow) * graphWidth}
-                  y1={padding}
-                  x2={padding + (time / timeWindow) * graphWidth}
-                  y2={height - padding}
-                  stroke="#e5e7eb"
-                  strokeWidth="1"
-                  strokeDasharray="2,2"
-                />
-                <text
-                  x={padding + (time / timeWindow) * graphWidth}
-                  y={height - padding + 20}
-                  textAnchor="middle"
-                  className="text-xs fill-gray-500"
-                >
-                  {currentTime <= timeWindow ? time : currentTime - timeWindow + time}s
-                </text>
-              </g>
-            ))}
+            {/* Time axis removed as requested */}
             <path
               d={createPath()}
               fill="none"

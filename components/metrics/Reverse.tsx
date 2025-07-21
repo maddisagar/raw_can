@@ -1,16 +1,15 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useMemo } from "react"
+import { useData } from "../data-context"
 
 interface DataPoint {
   time: number
   value: number
 }
 
-export default function ReverseGraph() {
-  const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-  const [currentTime, setCurrentTime] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+export default function ReverseModeGraph() {
+  const { history, isConnected } = useData()
 
   const width = 480
   const height = 250
@@ -18,37 +17,22 @@ export default function ReverseGraph() {
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
 
-  // Reverse Gear: 0 (Off), 1 (On)
   const minValue = 0
   const maxValue = 1
   const timeWindow = 20
 
-  useEffect(() => {
-    const initialValue = Math.random() > 0.5 ? 1 : 0 // Start randomly
-    setDataPoints([{ time: 0, value: initialValue }])
-    intervalRef.current = setInterval(() => {
-      setCurrentTime((prev) => {
-        const newTime = prev + 1
-        // Randomly toggle mode
-        const newValue = Math.random() > 0.9 ? 1 : 0
-        setDataPoints((prevPoints) => {
-          const newPoint = { time: newTime, value: newValue }
-          if (newTime <= timeWindow) {
-            return [...prevPoints, newPoint]
-          } else {
-            const filteredPoints = prevPoints.filter((point) => point.time > newTime - timeWindow)
-            return [...filteredPoints, newPoint]
-          }
-        })
-        return newTime
-      })
-    }, 1000)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [])
+  // Memoized dataPoints
+  const dataPoints = useMemo(() => {
+    if (!isConnected || !history || history.length === 0) return []
+    return history
+      .map((item, idx) => ({
+        time: idx,
+        value: item.status615?.Reverse ? 1 : 0,
+      }))
+      .filter((point) => typeof point.value === "number")
+  }, [history, isConnected])
+
+  const currentTime = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].time : 0
 
   const getX = (time: number) => {
     const displayTime = currentTime <= timeWindow ? time : time - (currentTime - timeWindow)
@@ -62,7 +46,9 @@ export default function ReverseGraph() {
   const createPath = () => {
     if (dataPoints.length < 2) return ""
     const visiblePoints =
-      currentTime <= timeWindow ? dataPoints : dataPoints.filter((point) => point.time > currentTime - timeWindow)
+      currentTime <= timeWindow
+        ? dataPoints
+        : dataPoints.filter((point) => point.time > currentTime - timeWindow)
     if (visiblePoints.length < 2) return ""
     let path = `M ${getX(visiblePoints[0].time)} ${getY(visiblePoints[0].value)}`
     for (let i = 1; i < visiblePoints.length; i++) {
@@ -73,18 +59,26 @@ export default function ReverseGraph() {
 
   const currentValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 0
 
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Reverse Gear Monitor</h2>
+          <div className="text-base font-semibold text-gray-900">Waiting for CAN connection...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] border border-gray-100">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-1">Reverse Gear Monitor</h2>
           <div className="flex items-center gap-4">
-            {/* <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full animate-pulse ${currentValue === 1 ? 'bg-yellow-500' : 'bg-gray-400'}`}></div>
-              <span className="text-sm text-gray-600">Live Data</span>
-            </div> */}
-            <div className={`text-base font-semibold ${currentValue === 1 ? 'text-yellow-500' : 'text-gray-900'}`}>{currentValue === 1 ? 'ON' : 'OFF'}</div>
-            {/* <div className="text-sm text-gray-500">Time: {currentTime}s</div> */}
+            <div className={`text-base font-semibold ${currentValue === 1 ? 'text-yellow-500' : 'text-gray-900'}`}>
+              {currentValue === 1 ? 'ON' : 'OFF'}
+            </div>
           </div>
         </div>
         <div className="relative">
@@ -108,27 +102,6 @@ export default function ReverseGraph() {
                 />
                 <text x={padding - 10} y={getY(val) + 4} textAnchor="end" fontSize="11" fill="#6b7280">
                   {val === 1 ? 'ON' : 'OFF'}
-                </text>
-              </g>
-            ))}
-            {[0, 5, 10, 15, 20].map((time) => (
-              <g key={time}>
-                <line
-                  x1={padding + (time / timeWindow) * graphWidth}
-                  y1={padding}
-                  x2={padding + (time / timeWindow) * graphWidth}
-                  y2={height - padding}
-                  stroke="#e5e7eb"
-                  strokeWidth="1"
-                  strokeDasharray="2,2"
-                />
-                <text
-                  x={padding + (time / timeWindow) * graphWidth}
-                  y={height - padding + 20}
-                  textAnchor="middle"
-                  className="text-xs fill-gray-500"
-                >
-                  {currentTime <= timeWindow ? time : currentTime - timeWindow + time}s
                 </text>
               </g>
             ))}
@@ -168,8 +141,8 @@ export default function ReverseGraph() {
               ))}
             {dataPoints.length > 0 && (
               <circle
-                cx={getX(dataPoints[dataPoints.length - 1].time)}
-                cy={getY(dataPoints[dataPoints.length - 1].value)}
+                cx={getX(currentTime)}
+                cy={getY(currentValue)}
                 r="6"
                 fill={currentValue === 1 ? "#f59e0b" : "#e5e7eb"}
                 stroke="white"
@@ -180,12 +153,6 @@ export default function ReverseGraph() {
             )}
           </svg>
         </div>
-        {/* <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-          <span>
-            Mode: OFF (0) / ON (1)
-          </span>
-          <span>Update Interval: 1s</span>
-        </div> */}
       </div>
     </div>
   )

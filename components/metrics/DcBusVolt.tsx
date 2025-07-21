@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useMemo } from "react"
+import { useData } from "../data-context"
 
 interface DataPoint {
   time: number
@@ -8,9 +9,7 @@ interface DataPoint {
 }
 
 export default function DcBusVoltGraph() {
-  const [dataPoints, setDataPoints] = useState<DataPoint[]>([])
-  const [currentTime, setCurrentTime] = useState(0)
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const { history, isConnected } = useData()
 
   const width = 480
   const height = 250
@@ -18,38 +17,21 @@ export default function DcBusVoltGraph() {
   const graphWidth = width - 2 * padding
   const graphHeight = height - 2 * padding
 
-  // DC Bus Voltage range (0V to 600V)
   const minValue = 0
   const maxValue = 600
   const timeWindow = 20
 
-  useEffect(() => {
-    const initialValue = 300 + Math.random() * 100 // Start around 300-400V
-    setDataPoints([{ time: 0, value: initialValue }])
-    intervalRef.current = setInterval(() => {
-      setCurrentTime((prev) => {
-        const newTime = prev + 1
-        const lastValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 350
-        const variation = (Math.random() - 0.5) * 40 // ±20V variation
-        const newValue = Math.max(minValue, Math.min(maxValue, lastValue + variation))
-        setDataPoints((prevPoints) => {
-          const newPoint = { time: newTime, value: newValue }
-          if (newTime <= timeWindow) {
-            return [...prevPoints, newPoint]
-          } else {
-            const filteredPoints = prevPoints.filter((point) => point.time > newTime - timeWindow)
-            return [...filteredPoints, newPoint]
-          }
-        })
-        return newTime
-      })
-    }, 1000)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [])
+  const dataPoints = useMemo(() => {
+    if (!isConnected || !history || history.length === 0) return []
+    return history
+      .map((item, idx) => ({
+        time: idx,
+        value: item.measurement617?.DcBusVolt ?? 0,
+      }))
+      .filter((point) => typeof point.value === "number" && !isNaN(point.value))
+  }, [history, isConnected])
+
+  const currentTime = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].time : 0
 
   const getX = (time: number) => {
     const displayTime = currentTime <= timeWindow ? time : time - (currentTime - timeWindow)
@@ -61,10 +43,13 @@ export default function DcBusVoltGraph() {
   }
 
   const createPath = () => {
-    if (dataPoints.length < 2) return ""
     const visiblePoints =
-      currentTime <= timeWindow ? dataPoints : dataPoints.filter((point) => point.time > currentTime - timeWindow)
+      currentTime <= timeWindow
+        ? dataPoints
+        : dataPoints.filter((point) => point.time > currentTime - timeWindow)
+
     if (visiblePoints.length < 2) return ""
+
     let path = `M ${getX(visiblePoints[0].time)} ${getY(visiblePoints[0].value)}`
     for (let i = 1; i < visiblePoints.length; i++) {
       path += ` L ${getX(visiblePoints[i].time)} ${getY(visiblePoints[i].value)}`
@@ -74,28 +59,38 @@ export default function DcBusVoltGraph() {
 
   const currentValue = dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].value : 0
 
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100 text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-1">DC Bus Voltage Monitor</h2>
+          <div className="text-base font-semibold text-gray-900">Waiting for CAN connection...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-6 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] border border-gray-100">
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-1">DC Bus Voltage Monitor</h2>
-          <div className="flex items-center gap-4">
-            {/* <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600">Live Data</span>
-            </div> */}
-            <div className="text-base font-semibold text-gray-900">{currentValue.toFixed(1)}V</div>
-            {/* <div className="text-sm text-gray-500">Time: {currentTime}s</div> */}
-          </div>
+          <div className="text-base font-semibold text-gray-900">{currentValue.toFixed(1)}V</div>
         </div>
         <div className="relative">
-          <svg width={width} height={height} className="border border-gray-200 rounded bg-white overflow-visible" style={{ display: 'block', margin: '0 auto' }}>
+          <svg
+            width={width}
+            height={height}
+            className="border border-gray-200 rounded bg-white overflow-visible"
+            style={{ display: "block", margin: "0 auto" }}
+          >
             <defs>
               <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
                 <path d="M 40 0 L 0 0 0 30" fill="none" stroke="#f3f4f6" strokeWidth="1" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
+
             {[0, 100, 200, 300, 400, 500, 600].map((val) => (
               <g key={val}>
                 <line
@@ -112,27 +107,29 @@ export default function DcBusVoltGraph() {
                 </text>
               </g>
             ))}
-            {[0, 5, 10, 15, 20].map((time) => (
-              <g key={time}>
+
+            {/* {[0, 5, 10, 15, 20].map((t) => (
+              <g key={t}>
                 <line
-                  x1={padding + (time / timeWindow) * graphWidth}
+                  x1={padding + (t / timeWindow) * graphWidth}
                   y1={padding}
-                  x2={padding + (time / timeWindow) * graphWidth}
+                  x2={padding + (t / timeWindow) * graphWidth}
                   y2={height - padding}
                   stroke="#e5e7eb"
                   strokeWidth="1"
                   strokeDasharray="2,2"
                 />
                 <text
-                  x={padding + (time / timeWindow) * graphWidth}
+                  x={padding + (t / timeWindow) * graphWidth}
                   y={height - padding + 20}
                   textAnchor="middle"
                   className="text-xs fill-gray-500"
                 >
-                  {currentTime <= timeWindow ? time : currentTime - timeWindow + time}s
+                  {currentTime <= timeWindow ? t : currentTime - timeWindow + t}s
                 </text>
               </g>
-            ))}
+            ))} */}
+
             <path
               d={createPath()}
               fill="none"
@@ -143,6 +140,7 @@ export default function DcBusVoltGraph() {
               className="drop-shadow-sm"
               style={{ filter: "drop-shadow(0 2px 4px rgba(245, 158, 11, 0.2))" }}
             />
+
             {dataPoints
               .filter((point) => currentTime <= timeWindow || point.time > currentTime - timeWindow)
               .map((point, index) => (
@@ -167,6 +165,7 @@ export default function DcBusVoltGraph() {
                   </circle>
                 </g>
               ))}
+
             {dataPoints.length > 0 && (
               <circle
                 cx={getX(dataPoints[dataPoints.length - 1].time)}
@@ -176,17 +175,13 @@ export default function DcBusVoltGraph() {
                 stroke="white"
                 strokeWidth="3"
                 className="animate-pulse"
-                style={{ filter: "drop-shadow(0 0 8px rgba(245, 158, 11, 0.6))" }}
+                style={{
+                  filter: "drop-shadow(0 0 8px rgba(245, 158, 11, 0.6))",
+                }}
               />
             )}
           </svg>
         </div>
-        {/* <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-          <span>
-            Voltage Range: {minValue}V - {maxValue}V
-          </span>
-          <span>Update Interval: 1s</span>
-        </div> */}
       </div>
     </div>
   )
