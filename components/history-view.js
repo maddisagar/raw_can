@@ -6,13 +6,12 @@
 
 import { useState, useEffect } from "react"
 import { useData } from "./data-context"
-import { Download, Search } from "lucide-react"
+import { Download } from "lucide-react"
 import jsPDF from "jspdf"
 import { calculateAlerts } from "./data-context"
 
 export default function HistoryView() {
   const { history } = useData()
-  const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [exportFormat, setExportFormat] = useState("json") // new state for export format
   const [now, setNow] = useState(Date.now()) // state to trigger re-render for dynamic time update
@@ -32,17 +31,7 @@ export default function HistoryView() {
     return alerts.some(alert => alert.type === "critical" || alert.type === "warning")
   })
 
-  // Then filter by search term on the reduced set
-  const filteredHistory = filteredByAlerts.filter((item) => {
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      searchTerm === "" ||
-      item.timestamp.toLowerCase().includes(searchLower) ||
-      (item.status615 && Object.values(item.status615).some(val => String(val).toLowerCase().includes(searchLower))) ||
-      (item.temp616 && Object.values(item.temp616).some(val => String(val).toLowerCase().includes(searchLower))) ||
-      (item.measurement617 && Object.values(item.measurement617).some(val => String(val).toLowerCase().includes(searchLower)))
-    )
-  })
+  const filteredHistory = filteredByAlerts
 
   const totalPages = Math.ceil(filteredHistory.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -147,15 +136,6 @@ export default function HistoryView() {
       <div className="history-header">
         <h2>Data History</h2>
         <div className="history-controls">
-          <div className="search-box">
-            <Search size={16} />
-            <input
-              type="text"
-              placeholder="Search by timestamp..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
 
           <select
             value={exportFormat}

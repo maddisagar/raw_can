@@ -220,7 +220,7 @@ export const DataProvider = ({ children }) => {
                       const newTimestamp = new Date().toISOString();
                       setHistory((prevHistory) => {
                         const updated = [...prevHistory, { ...merged, timestamp: newTimestamp }];
-                        return updated.length > 200 ? updated.slice(-200) : updated;
+                        return updated.length > 1000 ? updated.slice(-1000) : updated;
                       });
                       return {
                         ...merged,
@@ -360,7 +360,23 @@ export const DataProvider = ({ children }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history])
 
-  // The rest of the useEffect code remains unchanged
+  // New useEffect to reset history every 24 hours at midnight
+  useEffect(() => {
+    const now = new Date();
+    const msUntilMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime();
+
+    const timeoutId = setTimeout(() => {
+      setHistory([]);
+      const intervalId = setInterval(() => {
+        setHistory([]);
+      }, 24 * 60 * 60 * 1000);
+
+      // Cleanup interval on unmount
+      return () => clearInterval(intervalId);
+    }, msUntilMidnight);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   const alerts = useMemo(() => calculateAlerts(currentData), [currentData])
 

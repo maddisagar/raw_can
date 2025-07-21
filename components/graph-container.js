@@ -114,6 +114,25 @@ if (mode === "individual" || fullView) {
   }
 
   if (mode === "overlay") {
+    // Map metric keys to components
+    const metricComponentsMap = {
+      CtlrTemp1,
+      CtlrTemp2,
+      CtlrTemp,
+      MtrTemp,
+      AcCurrMeaRms,
+      DcCurrEstd,
+      DcBusVolt,
+      MtrSpd,
+      ThrotVolt,
+      LimpHomeMode,
+      EcoBoost,
+      RegenMode,
+      Forward,
+      Reverse,
+      Brake,
+    };
+
     return (
       <div className="flex flex-col items-center">
         <div className="flex flex-wrap justify-center gap-2 mb-4">
@@ -131,18 +150,18 @@ if (mode === "individual" || fullView) {
         </div>
 
         {selectedGraphs.length > 0 && (
-          <Card className="w-full shadow-md">
-            <CardContent className="p-4">
-              <Chart
-                data={history}
-                metrics={allMetrics.filter((m) => selectedGraphs.includes(m.key))}
-                height={400}
-                overlay={true}
-                darkMode={darkMode}
-                ref={overlayCanvasRef}
-              />
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            {selectedGraphs.map((key) => {
+              const GraphComponent = metricComponentsMap[key];
+              return (
+                <Card className="shadow-md" key={key}>
+                  <CardContent className="p-4">
+                    {GraphComponent ? <GraphComponent /> : null}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         )}
       </div>
     );
