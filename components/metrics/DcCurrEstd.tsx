@@ -18,7 +18,7 @@ export default function DcCurrEstdGraph() {
   const graphHeight = height - 2 * padding
 
   const minValue = 0
-  const maxValue = 300
+  const maxValue = 500
   const timeWindow = 20 // in seconds
 
   const points: DataPoint[] = useMemo(() => {
@@ -89,7 +89,7 @@ export default function DcCurrEstdGraph() {
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
-            {[0, 50, 100, 150, 200, 250, 300].map((val) => (
+            {[0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500].map((val) => (
               <g key={val}>
                 <line
                   x1={padding}
