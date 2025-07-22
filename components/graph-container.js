@@ -123,53 +123,30 @@ if (mode === "individual" || fullView) {
   }
 
   if (mode === "overlay") {
-    // Helper function to transform history data for overlay chart
+    // Rolling buffer for smooth overlay graph
+    const OVERLAY_BUFFER_SIZE = 300; // Number of points to display
     const prepareOverlayData = () => {
       if (!history || history.length === 0 || selectedGraphs.length === 0) return [];
-
-      // Determine the latest timestamp in history
-      const latestTimestampStr = history[history.length - 1].timestamp || history[history.length - 1].time || 0;
-      const latestTimestamp = Date.parse(latestTimestampStr);
-      // Define 5 minutes window in milliseconds
-      const windowDuration = 5 * 60 * 1000;
-      const windowStart = latestTimestamp - windowDuration;
-
-      // Filter history to only include entries within the last 5 minutes
-      const filteredHistory = history.filter((entry) => {
-        const entryTimestampStr = entry.timestamp || entry.time || 0;
-        const entryTimestamp = Date.parse(entryTimestampStr);
-        return entryTimestamp >= windowStart && entryTimestamp <= latestTimestamp;
-      });
-
-      return filteredHistory.map((entry) => {
+      // Only keep the last OVERLAY_BUFFER_SIZE points
+      const bufferHistory = history.length > OVERLAY_BUFFER_SIZE
+        ? history.slice(-OVERLAY_BUFFER_SIZE)
+        : history;
+      return bufferHistory.map((entry) => {
         const dataPoint = { timestamp: entry.timestamp || entry.time || 0 };
         selectedGraphs.forEach((key) => {
-          // Extract value for each selected metric key from entry
-          // The metric keys correspond to nested keys in entry, e.g. measurement617.AcCurrMeaRms
-          // We need to find the correct path for each metric key from allMetrics category or key
-          // For simplicity, try to find value in entry by key directly or nested under category keys
-          // We'll try direct key first, then search in known categories
-
-          // Find metric info
           const metricInfo = allMetrics.find((m) => m.key === key);
           if (!metricInfo) {
             dataPoint[key] = null;
             return;
           }
-
-          // Try direct key
           if (entry[key] !== undefined) {
             dataPoint[key] = entry[key];
             return;
           }
-
-          // Try nested keys based on category
           if (metricInfo.category && entry[metricInfo.category] && entry[metricInfo.category][key] !== undefined) {
             dataPoint[key] = entry[metricInfo.category][key];
             return;
           }
-
-          // Fallback null
           dataPoint[key] = null;
         });
         return dataPoint;
@@ -177,8 +154,6 @@ if (mode === "individual" || fullView) {
     };
 
     const overlayData = prepareOverlayData();
-
-    // Prepare metrics array for Chart component
     const overlayMetrics = selectedGraphs
       .map((key) => allMetrics.find((m) => m.key === key))
       .filter(Boolean);
