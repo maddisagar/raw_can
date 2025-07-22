@@ -127,7 +127,21 @@ if (mode === "individual" || fullView) {
     const prepareOverlayData = () => {
       if (!history || history.length === 0 || selectedGraphs.length === 0) return [];
 
-      return history.map((entry) => {
+      // Determine the latest timestamp in history
+      const latestTimestampStr = history[history.length - 1].timestamp || history[history.length - 1].time || 0;
+      const latestTimestamp = Date.parse(latestTimestampStr);
+      // Define 5 minutes window in milliseconds
+      const windowDuration = 5 * 60 * 1000;
+      const windowStart = latestTimestamp - windowDuration;
+
+      // Filter history to only include entries within the last 5 minutes
+      const filteredHistory = history.filter((entry) => {
+        const entryTimestampStr = entry.timestamp || entry.time || 0;
+        const entryTimestamp = Date.parse(entryTimestampStr);
+        return entryTimestamp >= windowStart && entryTimestamp <= latestTimestamp;
+      });
+
+      return filteredHistory.map((entry) => {
         const dataPoint = { timestamp: entry.timestamp || entry.time || 0 };
         selectedGraphs.forEach((key) => {
           // Extract value for each selected metric key from entry

@@ -19,7 +19,18 @@ const Chart = React.forwardRef(({ data, metric, metrics, height = 200, overlay =
             <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#666" : "#ccc"} />
             <XAxis dataKey="timestamp" stroke={darkMode ? "#fff" : "#000"} />
             <YAxis stroke={darkMode ? "#fff" : "#000"} />
-            <Tooltip />
+            <Tooltip labelFormatter={(label) => {
+              if (!label) return "";
+              const date = new Date(label);
+              const pad = (n) => n.toString().padStart(2, "0");
+              const day = pad(date.getDate());
+              const month = pad(date.getMonth() + 1);
+              const year = date.getFullYear();
+              const hours = pad(date.getHours());
+              const minutes = pad(date.getMinutes());
+              const seconds = pad(date.getSeconds());
+              return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+            }} />
             <Legend />
             {metrics.map((m) => (
               <Line key={m.key} type="monotone" dataKey={m.key} stroke={m.color} dot={false} name={m.label} />

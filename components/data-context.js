@@ -307,10 +307,10 @@ export const DataProvider = ({ children }) => {
                   ...message,
                 }));
                 // Reset the no-data timeout
-                if (lastDataTimeoutRef.current) clearTimeout(lastDataTimeoutRef.current)
-                lastDataTimeoutRef.current = setTimeout(() => {
-                  setCurrentData(defaultData)
-                }, 1000)
+                    if (lastDataTimeoutRef.current) clearTimeout(lastDataTimeoutRef.current)
+                    lastDataTimeoutRef.current = setTimeout(() => {
+                      setCurrentData(defaultData)
+                    }, 10000)
               } else if (
                 typeof message.id === "number" &&
                 typeof message.dlc === "number" &&
@@ -337,7 +337,7 @@ export const DataProvider = ({ children }) => {
                     if (lastDataTimeoutRef.current) clearTimeout(lastDataTimeoutRef.current)
                     lastDataTimeoutRef.current = setTimeout(() => {
                       setCurrentData(defaultData)
-                    }, 1000)
+                    }, 10000)
                     setDisplayData(decodedSignals);
                     if (decodedDataQueueRef.displayTimeout) {
                       clearTimeout(decodedDataQueueRef.displayTimeout);
