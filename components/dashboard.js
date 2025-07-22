@@ -217,7 +217,8 @@ export default function Dashboard() {
         .graph-controls {
           display: flex;
           gap: 1rem;
-          margin-bottom: 1rem;
+          margin-top: 0;
+          margin-bottom: 0.5rem;
         }
 
         .control-btn {

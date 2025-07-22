@@ -137,19 +137,19 @@ export const DataProvider = ({ children }) => {
         for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
           const dateStr = d.toISOString().slice(0, 10)
           reports[dateStr] = {
-            criticalAlertsCount: Math.floor(Math.random() * 50),
+            criticalAlertsCount: 0,
             systemModesCounts: {
-              regenMode: Math.floor(Math.random() * 100),
-              ascMode: Math.floor(Math.random() * 100),
-              hillHold: Math.floor(Math.random() * 100),
-              limp: Math.floor(Math.random() * 50),
-              idleShutdown: Math.floor(Math.random() * 100),
+              regenMode: 0,
+              ascMode: 0,
+              hillHold: 0,
+              limp: 0,
+              idleShutdown: 0,
             },
             temperatureStats: {
-              minMotorTemp: (Math.random() * 20 + 40).toFixed(1),
-              maxMotorTemp: (Math.random() * 20 + 60).toFixed(1),
-              minControllerTemp: (Math.random() * 20 + 30).toFixed(1),
-              maxControllerTemp: (Math.random() * 20 + 60).toFixed(1),
+              minMotorTemp: null,
+              maxMotorTemp: null,
+              minControllerTemp: null,
+              maxControllerTemp: null,
             },
           }
         }
@@ -159,6 +159,105 @@ export const DataProvider = ({ children }) => {
     return {}
   })
   const [isConnected, setIsConnected] = useState(false)
+
+  // Refs to track previous states for rising edge detection
+  const prevStatus615Ref = useRef({})
+  const prevCriticalAlertsRef = useRef(new Set())
+
+  // Helper function to detect rising edges for modes
+  const detectRisingEdges = (prevStatus, currentStatus) => {
+    const modes = ["RegenMode", "AscMode", "HillholdMode", "LimpHomeMode"]
+    const risingEdges = {}
+    modes.forEach((mode) => {
+      const prev = prevStatus[mode] || false
+      const curr = currentStatus[mode] || false
+      risingEdges[mode] = !prev && curr
+    })
+    return risingEdges
+  }
+
+  // Helper function to detect new critical alerts
+  const detectNewCriticalAlerts = (prevAlertsSet, currentAlerts) => {
+    const newAlerts = []
+    currentAlerts.forEach((alert) => {
+      if (alert.type === "critical" && !prevAlertsSet.has(alert.code)) {
+        newAlerts.push(alert.code)
+      }
+    })
+    return newAlerts
+  }
+
+  // Declare alerts before useEffect hooks that reference it
+  const alerts = useMemo(() => calculateAlerts(currentData), [currentData])
+
+  useEffect(() => {
+    if (!currentData || !currentData.status615) return
+
+    const today = new Date().toISOString().slice(0, 10)
+    setDailyReports((prevReports) => {
+      const todayReport = prevReports[today] || {
+        criticalAlertsCount: 0,
+        systemModesCounts: {
+          regenMode: 0,
+          ascMode: 0,
+          hillHold: 0,
+          limp: 0,
+          idleShutdown: 0,
+        },
+        temperatureStats: {
+          minMotorTemp: null,
+          maxMotorTemp: null,
+          minControllerTemp: null,
+          maxControllerTemp: null,
+        },
+      }
+
+      // Detect rising edges for modes
+      const risingEdges = detectRisingEdges(prevStatus615Ref.current, currentData.status615)
+
+      // Increment counts for modes on rising edge
+      if (risingEdges.RegenMode) todayReport.systemModesCounts.regenMode += 1
+      if (risingEdges.AscMode) todayReport.systemModesCounts.ascMode += 1
+      if (risingEdges.HillholdMode) todayReport.systemModesCounts.hillHold += 1
+      if (risingEdges.LimpHomeMode) todayReport.systemModesCounts.limp += 1
+
+      // Update min/max motor temperature
+      const motorTemp = currentData.temp616?.MtrTemp
+      if (typeof motorTemp === "number") {
+        if (todayReport.temperatureStats.minMotorTemp === null || motorTemp < todayReport.temperatureStats.minMotorTemp) {
+          todayReport.temperatureStats.minMotorTemp = motorTemp
+        }
+        if (todayReport.temperatureStats.maxMotorTemp === null || motorTemp > todayReport.temperatureStats.maxMotorTemp) {
+          todayReport.temperatureStats.maxMotorTemp = motorTemp
+        }
+      }
+
+      // Update min/max controller temperature (consider CtlrTemp1 and CtlrTemp2)
+      const ctlrTemps = [currentData.temp616?.CtlrTemp1, currentData.temp616?.CtlrTemp2].filter(t => typeof t === "number")
+      ctlrTemps.forEach((temp) => {
+        if (todayReport.temperatureStats.minControllerTemp === null || temp < todayReport.temperatureStats.minControllerTemp) {
+          todayReport.temperatureStats.minControllerTemp = temp
+        }
+        if (todayReport.temperatureStats.maxControllerTemp === null || temp > todayReport.temperatureStats.maxControllerTemp) {
+          todayReport.temperatureStats.maxControllerTemp = temp
+        }
+      })
+
+      // Detect new critical alerts
+      const newCriticalAlerts = detectNewCriticalAlerts(prevCriticalAlertsRef.current, alerts)
+      todayReport.criticalAlertsCount += newCriticalAlerts.length
+
+      // Update refs for next detection
+      prevStatus615Ref.current = currentData.status615
+      newCriticalAlerts.forEach(code => prevCriticalAlertsRef.current.add(code))
+
+      return {
+        ...prevReports,
+        [today]: todayReport,
+      }
+    })
+  }, [currentData, alerts])
+
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -391,7 +490,7 @@ export const DataProvider = ({ children }) => {
     return () => clearTimeout(timeoutId);
   }, []);
 
-  const alerts = useMemo(() => calculateAlerts(currentData), [currentData])
+  // ...existing code...
 
   // Function to get report by date or date range
   const getReportsByDateRange = (startDate, endDate) => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import "../src/app/date-picker.css"
 import {
   AlertCircle,
@@ -16,6 +16,7 @@ import "react-datepicker/dist/react-datepicker.css"
 
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
+import { useData } from "./data-context"
 
 function CircularProgress({ percentage }) {
   const radius = 40
@@ -61,37 +62,35 @@ function CircularProgress({ percentage }) {
   )
 }
 
-const constantReportData = {
-  criticalAlertsCount: 5,
-  systemModesCounts: {
-    regenMode: 21,
-    ascMode: 17,
-    hillHold: 13,
-    limp: 4,
-    idleShutdown: 55,
-  },
-  temperatureStats: {
-    minMotorTemp: 36,
-    maxMotorTemp: 78,
-    minControllerTemp: 28,
-    maxControllerTemp: 68,
-  },
-}
-
 export default function ReportsSection() {
   const reportRef = useRef(null)
+  const { dailyReports } = useData()
 
-  const [selectedDate, setSelectedDate] = useState(null)
+  const [selectedDate, setSelectedDate] = useState(new Date())
 
-  useEffect(() => {
-    setSelectedDate(new Date())
-  }, [])
+  // Memoize report data for selected date
+  const reportData = useMemo(() => {
+    if (!selectedDate) return null
+    const dateStr = selectedDate.toISOString().slice(0, 10)
+    return dailyReports[dateStr] || {
+      criticalAlertsCount: 0,
+      systemModesCounts: {
+        regenMode: 0,
+        ascMode: 0,
+        hillHold: 0,
+        limp: 0,
+        idleShutdown: 0,
+      },
+      temperatureStats: {
+        minMotorTemp: null,
+        maxMotorTemp: null,
+        minControllerTemp: null,
+        maxControllerTemp: null,
+      },
+    }
+  }, [selectedDate, dailyReports])
 
-  const reportData = constantReportData
-  const [hasError, setHasError] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
-
-  // Define the handleDownloadPDF function to fix ReferenceError
+  // PDF download function remains unchanged
   function handleDownloadPDF() {
     if (!reportRef.current) return
 
@@ -109,26 +108,15 @@ export default function ReportsSection() {
           format: [pdfWidth, pdfHeight],
         })
         const dateStr = new Date().toISOString().split("T")[0]
-        // Add date text at top center
         pdf.setFontSize(32)
         const textWidth = pdf.getTextWidth(dateStr)
         pdf.text(dateStr, (pdfWidth - textWidth) / 2, padding + 15)
-        // Add image below the date text
         pdf.addImage(imgData, "PNG", padding, padding + extraTopSpace, canvas.width, canvas.height)
         pdf.save(`report-${dateStr}.pdf`)
       })
       .catch((err) => {
         alert("Failed to generate PDF: " + err.message)
       })
-  }
-
-  if (hasError) {
-    return (
-      <div className="reports-section error">
-        <h2>Report</h2>
-        <div className="error-message">Error loading report: {errorMessage}</div>
-      </div>
-    )
   }
 
   if (!selectedDate) {
@@ -219,10 +207,10 @@ export default function ReportsSection() {
               <div className="temp-title">Motor Temperature</div>
               <div className="temp-values">
                 <div>
-                  Min <strong>{reportData.temperatureStats.minMotorTemp}°C</strong>
+                  Min <strong>{reportData.temperatureStats.minMotorTemp !== null ? reportData.temperatureStats.minMotorTemp.toFixed(1) : "--"}°C</strong>
                 </div>
                 <div>
-                  Max <strong>{reportData.temperatureStats.maxMotorTemp}°C</strong>
+                  Max <strong>{reportData.temperatureStats.maxMotorTemp !== null ? reportData.temperatureStats.maxMotorTemp.toFixed(1) : "--"}°C</strong>
                 </div>
               </div>
             </div>
@@ -235,10 +223,10 @@ export default function ReportsSection() {
               <div className="temp-title">Controller Temperature</div>
               <div className="temp-values">
                 <div>
-                  Min <strong>{reportData.temperatureStats.minControllerTemp}°C</strong>
+                  Min <strong>{reportData.temperatureStats.minControllerTemp !== null ? reportData.temperatureStats.minControllerTemp.toFixed(1) : "--"}°C</strong>
                 </div>
                 <div>
-                  Max <strong>{reportData.temperatureStats.maxControllerTemp}°C</strong>
+                  Max <strong>{reportData.temperatureStats.maxControllerTemp !== null ? reportData.temperatureStats.maxControllerTemp.toFixed(1) : "--"}°C</strong>
                 </div>
               </div>
             </div>
