@@ -38,12 +38,12 @@ export default function GraphContainer({ mode, fullView = false, darkMode = true
   const quadCanvasRefs = useRef([]);
 
   const allMetrics = [
-    { key: "CtlrTemp1", label: "Controller Temp 1", category: "temp616", color: "#3b82f6", unit: "°C" },
-    { key: "CtlrTemp2", label: "Controller Temp 2", category: "temp616", color: "#1d4ed8", unit: "°C" },
-    { key: "CtlrTemp", label: "Controller Temp Avg", category: "temp616", color: "#2563eb", unit: "°C" },
-    { key: "MtrTemp", label: "Motor Temperature", category: "temp616", color: "#ef4444", unit: "°C" },
-    { key: "AcCurrMeaRms", label: "AC Current RMS", category: "measurement617", color: "#22c55e", unit: "A" },
-    { key: "DcCurrEstd", label: "DC Current Est", category: "measurement617", color: "#16a34a", unit: "A" },
+    { key: "CtlrTemp1", label: "Ctlr Temp 1", category: "temp616", color: "#3b82f6", unit: "°C" },
+    { key: "CtlrTemp2", label: "Ctlr Temp 2", category: "temp616", color: "#1d4ed8", unit: "°C" },
+    { key: "CtlrTemp", label: "Ctlr Temp Avg", category: "temp616", color: "#2563eb", unit: "°C" },
+    { key: "MtrTemp", label: "Motor Temp", category: "temp616", color: "#ef4444", unit: "°C" },
+    { key: "AcCurrMeaRms", label: "AC Curr RMS", category: "measurement617", color: "#22c55e", unit: "A" },
+    { key: "DcCurrEstd", label: "DC Curr Est", category: "measurement617", color: "#16a34a", unit: "A" },
     { key: "DcBusVolt", label: "DC Bus Voltage", category: "measurement617", color: "#f59e0b", unit: "V" },
     { key: "MtrSpd", label: "Motor Speed", category: "measurement617", color: "#8b5cf6", unit: "RPM" },
     { key: "ThrotVolt", label: "Throttle Voltage", category: "measurement617", color: "#06b6d4", unit: "V" },
@@ -163,11 +163,11 @@ if (mode === "individual" || fullView) {
         <style jsx>{`
           .metric-button {
             position: relative;
-            padding: 0.6rem 1.2rem;
+            padding: 0.4rem 0.8rem;
             margin: 0.3rem;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            border-radius: 30px;
+            border-radius: 24px;
             border: 2px solid transparent;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -175,6 +175,8 @@ if (mode === "individual" || fullView) {
             overflow: hidden;
             transition: all 0.4s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6);
+            width: 140px;
+            text-align: center;
           }
           .metric-button::before {
             content: "";
@@ -206,6 +208,8 @@ if (mode === "individual" || fullView) {
             box-shadow: 0 6px 20px rgba(34, 197, 94, 0.8);
             border-color: #16a34a;
             color: white;
+            //Add outline color to text inside button when selected
+            text-shadow: 0 0 2px rgba(255, 255));
           }
           .metric-button.selected::before {
             background: radial-gradient(circle at center, rgba(255,255,255,0.6), transparent 50%);
