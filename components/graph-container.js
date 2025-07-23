@@ -281,7 +281,7 @@ if (mode === "individual" || fullView) {
         <style jsx>{`
           .metric-button {
             position: relative;
-            padding: 0.4rem 0.8rem;
+            padding: 0.2rem 0.8rem;
             margin: 0.3rem;
             font-size: 0.75rem;
             font-weight: 600;
@@ -293,7 +293,7 @@ if (mode === "individual" || fullView) {
             overflow: hidden;
             transition: all 0.4s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6);
-            width: 195px;
+            width: 130px;
             text-align: center;
           }
           .metric-button::before {
@@ -332,9 +332,10 @@ if (mode === "individual" || fullView) {
             background: radial-gradient(circle at center, rgba(255,255,255,0.6), transparent 50%);
           }
 
-          @media (max-width: 1500px) {
+          @media (min-width: 1500px) {
             .metric-button {
-              width: 130px;
+              width: 195px;
+              padding: 0.5rem 1rem;
         }
           }
         `}</style>
@@ -386,7 +387,7 @@ if (mode === "individual" || fullView) {
         {selectedGraphs.length > 0 ? (
           <Card className="shadow-md w-full max-w-5xl">
             <CardContent className="p-4">
-              <div style={{ width: "100%", height: 400, position: "relative", marginTop: 20 }}>
+              <div style={{ width: "100%", height: 650, position: "relative", marginTop: 20 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={overlayData} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#334155" : "#e5e7eb"} />
