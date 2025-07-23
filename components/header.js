@@ -139,10 +139,10 @@ export default function Header({ darkMode, toggleTheme, isConnected, currentView
           max-width: 1400px;
           margin: 0 auto;
           flex-wrap: wrap; /* allow wrapping on smaller screens */
-          gap: 1.5rem; /* increased gap between wrapped items */
+          gap: 0rem; /* increased gap between wrapped items */
         }
 
-        @media (min-width: 1500px) {
+        @media (min-width: 1600px) {
           .header-content {
             max-width: 1850px;
             padding-left: 0rem;

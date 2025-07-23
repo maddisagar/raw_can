@@ -1,6 +1,15 @@
 import React, { useState, useRef } from "react";
 import { useData } from "./data-context";
-import Chart from "./chart";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import CustomDropdown from "./custom-dropdown";
 import { Card, CardContent } from "components/ui/card";
 import MotorTemperatureGraph from "./MotorTemperatureGraph";
@@ -46,7 +55,7 @@ export default function GraphContainer({ mode, fullView = false, darkMode = true
     { key: "DcCurrEstd", label: "DC Curr Est", category: "measurement617", color: "#16a34a", unit: "A" },
     { key: "DcBusVolt", label: "DC Bus Voltage", category: "measurement617", color: "#f59e0b", unit: "V" },
     { key: "MtrSpd", label: "Motor Speed", category: "measurement617", color: "#8b5cf6", unit: "RPM" },
-    { key: "ThrotVolt", label: "Throttle Voltage", category: "measurement617", color: "#06b6d4", unit: "V" },
+    { key: "ThrotVolt", label: "Throttle Volt", category: "measurement617", color: "#06b6d4", unit: "V" },
     { key: "LimpHomeMode", label: "Limp Home Mode", category: "status615", color: "#ef4444", unit: "" },
     { key: "EcoBoost", label: "Eco Mode", category: "status615", color: "#22c55e", unit: "" },
     { key: "RegenMode", label: "Regen Mode", category: "status615", color: "#8b5cf6", unit: "" },
@@ -158,6 +167,7 @@ if (mode === "individual" || fullView) {
         ? history.slice(-OVERLAY_BUFFER_SIZE)
         : history;
       return bufferHistory.map((entry) => {
+        // Avoid mutating the same object, always create a new one
         const dataPoint = { timestamp: entry.timestamp || entry.time || 0 };
         selectedGraphs.forEach((key) => {
           const metricInfo = allMetrics.find((m) => m.key === key);
@@ -175,7 +185,7 @@ if (mode === "individual" || fullView) {
           }
           dataPoint[key] = null;
         });
-        return dataPoint;
+        return { ...dataPoint };
       });
     };
 
@@ -184,6 +194,88 @@ if (mode === "individual" || fullView) {
       .map((key) => allMetrics.find((m) => m.key === key))
       .filter(Boolean);
 
+
+    // Grouping logic for y-axes (groupedTemp, groupedCurrent, groupedStatus, others)
+    const tempGroupKeys = ["CtlrTemp", "CtlrTemp1", "CtlrTemp2", "MtrTemp"];
+    const currentGroupKeys = ["AcCurrMeaRms", "DcCurrEstd"];
+    const statusGroupKeys = ["LimpHomeMode", "EcoBoost", "RegenMode", "Forward", "Reverse", "Brake"];
+    // Compose uniqueMetrics for axes
+    const uniqueMetrics = [];
+    const seenGroup = new Set();
+    overlayMetrics.forEach((m) => {
+      if (tempGroupKeys.includes(m.key)) {
+        if (!seenGroup.has("groupedTemp")) {
+          uniqueMetrics.push({
+            key: "groupedTemp",
+            label: "Controller & Motor Temps",
+            color: "#ef4444",
+            scale: { min: 0, max: 200 },
+          });
+          seenGroup.add("groupedTemp");
+        }
+      } else if (currentGroupKeys.includes(m.key)) {
+        if (!seenGroup.has("groupedCurrent")) {
+          uniqueMetrics.push({
+            key: "groupedCurrent",
+            label: "AC & DC Current",
+            color: "#22c55e",
+            scale: { min: 0, max: 0.5 },
+          });
+          seenGroup.add("groupedCurrent");
+        }
+      } else if (statusGroupKeys.includes(m.key)) {
+        if (!seenGroup.has("groupedStatus")) {
+          uniqueMetrics.push({
+            key: "groupedStatus",
+            label: "Status Flags",
+            color: "#8b5cf6",
+            scale: { min: 0, max: 1 },
+          });
+          seenGroup.add("groupedStatus");
+        }
+      } else {
+        uniqueMetrics.push({
+          ...m,
+          scale: {
+            min:
+              m.key === "DcBusVolt"
+                ? 0
+                : m.key === "MtrSpd"
+                ? 0
+                : m.key === "ThrotVolt"
+                ? 0
+                : 0,
+            max:
+              m.key === "DcBusVolt"
+                ? 80
+                : m.key === "MtrSpd"
+                ? 8000
+                : m.key === "ThrotVolt"
+                ? 5
+                : 1,
+          },
+        });
+      }
+    });
+
+
+    // Helper for tooltip formatting
+    const formatTooltip = (value, name, props) => {
+      const metric = overlayMetrics.find((m) => m.key === name);
+      return metric ? `${value} ${metric.unit}` : value;
+    };
+
+
+    // Helper for timestamp formatting
+    const formatTimestamp = (ts) => {
+      if (!ts) return "";
+      const d = new Date(ts);
+      return d.toLocaleTimeString();
+    };
+
+    // Calculate left offset for each axis
+    const axisSpacing = 50;
+    // Only show axes for selected metrics, grouped as above
     return (
       <div className="flex flex-col items-center w-full">
         <style jsx>{`
@@ -201,7 +293,7 @@ if (mode === "individual" || fullView) {
             overflow: hidden;
             transition: all 0.4s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6);
-            width: 140px;
+            width: 195px;
             text-align: center;
           }
           .metric-button::before {
@@ -234,37 +326,156 @@ if (mode === "individual" || fullView) {
             box-shadow: 0 6px 20px rgba(34, 197, 94, 0.8);
             border-color: #16a34a;
             color: white;
-            //Add outline color to text inside button when selected
-            text-shadow: 0 0 2px rgba(255, 255));
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.7);
           }
           .metric-button.selected::before {
             background: radial-gradient(circle at center, rgba(255,255,255,0.6), transparent 50%);
           }
+
+          @media (max-width: 1500px) {
+            .metric-button {
+              width: 130px;
+        }
+          }
         `}</style>
-        <div className="flex flex-wrap justify-center gap-2 mb-4">
-          {allMetrics.map((metric) => (
-            <button
-              key={metric.key}
-              className={`metric-button ${selectedGraphs.includes(metric.key) ? "selected" : ""}`}
-              onClick={() => toggleGraphSelection(metric.key)}
-              title={metric.label}
+        <div className="flex flex-col items-center mb-4">
+          <div className="flex gap-2 mb-2">
+            {/* <button
+              className="metric-button"
+              style={{ background: '#22c55e', color: 'white', fontWeight: 700 }}
+              onClick={() => setSelectedGraphs(allMetrics.map(m => m.key))}
             >
-              {metric.label}
+              Select All
             </button>
-          ))}
+            <button
+              className="metric-button"
+              style={{ background: '#ef4444', color: 'white', fontWeight: 700 }}
+              onClick={() => setSelectedGraphs([])}
+            >
+              Deselect All
+            </button> */}
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {allMetrics.map((metric) => (
+              <button
+                key={metric.key}
+                className={`metric-button ${selectedGraphs.includes(metric.key) ? "selected" : ""}`}
+                onClick={() => toggleGraphSelection(metric.key)}
+                title={metric.label}
+              >
+                {metric.label}
+              </button>
+            ))}
+            <button
+              className="metric-button"
+              style={{ background: '#22c55e', color: 'white', fontWeight: 700 }}
+              onClick={() => setSelectedGraphs(allMetrics.map(m => m.key))}
+            >
+              Select All
+            </button>
+            <button
+              className="metric-button"
+              style={{ background: '#ef4444', color: 'white', fontWeight: 700 }}
+              onClick={() => setSelectedGraphs([])}
+            >
+              Deselect All
+            </button>
+          </div>
         </div>
 
         {selectedGraphs.length > 0 ? (
           <Card className="shadow-md w-full max-w-5xl">
             <CardContent className="p-4">
-              <Chart
-                data={overlayData}
-                metrics={overlayMetrics}
-                overlay={true}
-                height={400}
-                darkMode={darkMode}
-                ref={overlayCanvasRef}
-              />
+              <div style={{ width: "100%", height: 400, position: "relative", marginTop: 20 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={overlayData} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#334155" : "#e5e7eb"} />
+                    <XAxis
+                      dataKey="timestamp"
+                      tick={false}
+                      axisLine={false}
+                      stroke={darkMode ? "#cbd5e1" : "#334155"}
+                    />
+                    {/* Grouped color-coded Y-axes, spaced apart */}
+                    {uniqueMetrics.map((metric, idx) => (
+                      <YAxis
+                        key={metric.key}
+                        yAxisId={metric.key}
+                        domain={[metric.scale.min, metric.scale.max]}
+                        orientation="left"
+                        axisLine={true}
+                        tickLine={true}
+                        tick={{ fill: metric.color, fontSize: 12 }}
+                        stroke={metric.color}
+                        width={40}
+                        style={{ zIndex: 2 }}
+                        allowDecimals={true}
+                        mirror={false}
+                      />
+                    ))}
+                    <Tooltip
+                      labelFormatter={formatTimestamp}
+                      formatter={(value, name) => {
+                        // Find group label if grouped
+                        if (tempGroupKeys.includes(name)) {
+                          return [value, "Controller & Motor Temps"];
+                        } else if (currentGroupKeys.includes(name)) {
+                          return [value, "AC & DC Current"];
+                        } else if (statusGroupKeys.includes(name)) {
+                          return [value, "Status Flags"];
+                        }
+                        const metric = overlayMetrics.find((m) => m.key === name);
+                        return metric ? [value, metric.label] : [value, name];
+                      }}
+                      contentStyle={{ background: darkMode ? "#1e293b" : "#fff", color: darkMode ? "#cbd5e1" : "#334155" }}
+                    />
+                    <Legend
+                      formatter={(value) => {
+                        // Find group label if grouped
+                        if (tempGroupKeys.includes(value)) {
+                          return <span style={{ color: "#ef4444" }}>Controller & Motor Temps</span>;
+                        } else if (currentGroupKeys.includes(value)) {
+                          return <span style={{ color: "#22c55e" }}>AC & DC Current</span>;
+                        } else if (statusGroupKeys.includes(value)) {
+                          return <span style={{ color: "#8b5cf6" }}>Status Flags</span>;
+                        }
+                        const metric = overlayMetrics.find((m) => m.key === value);
+                        return (
+                          <span style={{ color: metric?.color }}>{metric?.label || value}</span>
+                        );
+                      }}
+                    />
+                    {/* Render lines for each metric, color-matched and axis-matched */}
+                    {overlayMetrics.map((m) => {
+                      let yAxisId = m.key;
+                      let color = m.color;
+                      if (tempGroupKeys.includes(m.key)) {
+                        yAxisId = "groupedTemp";
+                        color = "#ef4444";
+                      } else if (currentGroupKeys.includes(m.key)) {
+                        yAxisId = "groupedCurrent";
+                        color = "#22c55e";
+                      } else if (statusGroupKeys.includes(m.key)) {
+                        yAxisId = "groupedStatus";
+                        color = "#8b5cf6";
+                      }
+                      return (
+                        <Line
+                          key={m.key}
+                          yAxisId={yAxisId}
+                          type="monotone"
+                          dataKey={m.key}
+                          stroke={color}
+                          dot={false}
+                          strokeWidth={2}
+                          isAnimationActive={false}
+                          name={m.label}
+                        />
+                      );
+                    })}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
         ) : (
