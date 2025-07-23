@@ -73,6 +73,7 @@ const Chart = React.forwardRef(
               <XAxis
                 dataKey="timestamp"
                 stroke={darkMode ? "#fff" : "#000"}
+                hide={true}
               />
               {uniqueMetrics.map((m, index) => {
                 let domain;
@@ -203,4 +204,4 @@ const Chart = React.forwardRef(
 
 Chart.displayName = "Chart";
 
-export default Chart;
+export default Chart; 

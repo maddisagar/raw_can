@@ -150,7 +150,16 @@ export default function PerformanceMetrics() {
           console.log(`Metric: ${metric.title}, Value: ${metric.value}`)
           const IconComponent = metric.icon
           return (
-            <div key={metric.title} className={`metric-card ${metric.title === "Motor Speed" ? "motor-speed-card" : ""}`}>
+          <div
+            key={metric.title}
+            className={
+              "metric-card " +
+              (metric.title === "Motor Speed" ? "motor-speed-card " : "") +
+              (metric.title === "DC Bus Voltage" ? "dc-bus-volt-card " : "") +
+              (metric.title === "AC Current RMS" ? "ac-current-rms-card " : "") +
+              (metric.title === "Motor Temperature" ? "motor-temp-card " : "")
+            }
+          >
               <div className="metric-header">
                 <h4>{metric.title}</h4>
                 <div className="icon-group">
@@ -185,14 +194,8 @@ export default function PerformanceMetrics() {
                   <span className="value">{metric.title === "Motor Speed" ? Math.abs(metric.value ?? 0).toFixed(1) : (metric.value ?? 0).toFixed(1)}</span>
                   <span className="unit">{metric.unit}</span>
                 </div>
-                <div style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  marginTop: "0.5rem",
-                  width: "100%"
-                }}>
-                  <div style={{ transform: "scale(1.25)", transformOrigin: "center" }}>
+                <div className="odometer-wrapper">
+                  <div className="odometer-scale">
                     <Odometer
                       value={metric.title === "Motor Speed" ? Math.abs(metric.value ?? 0) : (metric.value ?? 0)}
                       max={typeof metric.max === "number" && metric.max > 0 ? metric.max : 1}
@@ -208,6 +211,22 @@ export default function PerformanceMetrics() {
       </div>
 
       <style jsx>{`
+        .odometer-wrapper {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin-top: 0.5rem;
+          width: 100%;
+        }
+        .odometer-scale {
+          transform: scale(1.25);
+          transform-origin: center;
+        }
+        @media (min-width: 1500px) {
+          .odometer-scale {
+            transform: scale(2);
+          }
+        }
         .performance-metrics {
           background: rgba(255, 255, 255, 0.05);
           backdrop-filter: blur(20px);
@@ -265,6 +284,19 @@ export default function PerformanceMetrics() {
           align-items: stretch;
         }
 
+        @media (min-width: 1500px) {
+          .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 1.5rem;
+            height: calc(70vh - 3rem);
+          }
+          .metric-card {
+            height: 95%;
+            min-height: unset;
+          }
+        }
+
         .metric-card {
           background: rgba(255, 255, 255, 0.03);
           border: 3px solid #C0C1EF;
@@ -287,6 +319,14 @@ export default function PerformanceMetrics() {
           font-size: 0.95rem;
           font-weight: 600;
           color: #000000ff;
+        }
+
+        /* Dark mode text color for specific metrics */
+        :global(.app.dark) .motor-speed-card .metric-header h4,
+        :global(.app.dark) .dc-bus-volt-card .metric-header h4,
+        :global(.app.dark) .ac-current-rms-card .metric-header h4,
+        :global(.app.dark) .motor-temp-card .metric-header h4 {
+          color: white;
         }
 
         .icon-group {
@@ -332,7 +372,9 @@ export default function PerformanceMetrics() {
         }
 
         .metric-content {
-          margin-top: 0.5rem;
+          margin-top: 0.2rem;
+          padding-top: 0.5rem;
+          padding-bottom: 0.5rem;
         }
 
         .metric-value {
@@ -345,9 +387,33 @@ export default function PerformanceMetrics() {
           margin-bottom: 2rem;
         }
 
+        .odometer-wrapper {
+          margin-top: 0.1rem;
+        }
+
         .metric-value .unit {
           font-size: 1.2rem;
           opacity: 0.8;
+        }
+
+        @media (min-width: 1500px) {
+          .metric-content {
+            padding-top: 0.7rem;
+            padding-bottom: 2rem;
+          }
+          .metric-value {
+            padding-top: 0rem;
+            padding-bottom: 0.5rem;
+            margin-top: -2.2rem;
+            margin-bottom: 5rem;
+            font-size: 2.5rem;
+          }
+          .odometer-wrapper {
+            margin-top: 0rem;
+          }
+          .metric-header h4 {
+            font-size: 1.1rem;
+          }
         }
 
         @media (max-width: 768px) {

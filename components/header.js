@@ -139,7 +139,26 @@ export default function Header({ darkMode, toggleTheme, isConnected, currentView
           max-width: 1400px;
           margin: 0 auto;
           flex-wrap: wrap; /* allow wrapping on smaller screens */
-          gap: 0.5rem; /* add gap between wrapped items */
+          gap: 1.5rem; /* increased gap between wrapped items */
+        }
+
+        @media (min-width: 1500px) {
+          .header-content {
+            max-width: 1850px;
+            padding-left: 0rem;
+            padding-right: 2rem;
+            gap: 2rem;
+            justify-content: space-between;
+            align-items: center;
+          }
+
+          .logo-section {
+            flex: 0 0 auto;
+            padding-left: 0;
+            margin-left: 0;
+            gap: 1rem;
+            justify-content: flex-start;
+          }
         }
 
         .logo-section {
@@ -355,7 +374,7 @@ export default function Header({ darkMode, toggleTheme, isConnected, currentView
         .mobile-nav-btn svg {
           stroke: currentColor;
         }
-
+          
         @media (max-width: 768px) {
           .header-content {
             padding: 0.5rem;

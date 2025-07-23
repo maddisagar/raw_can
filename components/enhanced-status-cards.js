@@ -249,6 +249,23 @@ export default function EnhancedStatusCards({ showOnlyStatusGroups = false, show
           grid-template-columns: repeat(4, 1fr);
           gap: 1.5rem;
         }
+        @media (min-width: 1500px) {
+          .status-groups {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 5rem 1.75rem;
+            width: 100%;
+            height: 100%;
+            align-items: stretch;
+          }
+          .status-group {
+            height: 100%;
+            min-height: 0;
+            max-height: 100%;
+            padding:2.5rem 2rem 2.5rem 2rem;
+            font-size: 1.25rem;
+          }
+        }
 
         .status-group {
           background: rgba(255, 255, 255, 0.05);
@@ -328,6 +345,37 @@ export default function EnhancedStatusCards({ showOnlyStatusGroups = false, show
           border: 3px solid #495e70;
           border-radius: 16px;
           padding: 1.5rem;
+        }
+
+        @media (min-width: 1500px) {
+          .sensor-health-section {
+            width: 93vw;
+            max-width: 100%;
+            padding: 1rem 2rem 2rem 2rem;
+            font-size: 1.25rem;
+            margin-bottom: -2rem;
+          }
+          .sensor-health-section .section-header h3 {
+            font-size: 1.25rem;
+          }
+          .sensor-health-section .health-summary {
+            font-size: 1.25rem;
+          }
+          .sensor-health-section .sensor-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+          }
+          .sensor-health-section .sensor-item {
+            font-size: 1.25rem;
+            padding: 1.25rem 1.5rem;
+          }
+          .sensor-health-section .sensor-status.ok,
+          .sensor-health-section .sensor-status.error {
+            svg {
+              width: 20px !important;
+              height: 20px !important;
+            }
+          }
         }
 
         .section-header {
@@ -500,6 +548,35 @@ export default function EnhancedStatusCards({ showOnlyStatusGroups = false, show
           .temp-card {
             padding: 0.5rem 1rem;
             font-size: 1rem;
+          }
+        }
+
+        @media (min-width: 1500px) {
+          .temperature-section {
+            width: 95vw;
+            max-width: 95vw;
+            padding: 1rem 2rem 1.5em;
+            font-size: 1.5rem;
+            box-sizing: border-box;
+          }
+          
+          .temperature-section .section-header h3 {
+            font-size: 1.5rem;
+            }
+
+          .temp-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+          }
+
+          .temp-card {
+            padding: 2rem 4rem;
+            font-size: 2.5rem;
+            border-width: 2px;
+          }
+
+          .temp-value .value {
+            font-size: 2.5rem;
           }
         }
       `}</style>

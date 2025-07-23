@@ -108,6 +108,32 @@ if (mode === "individual" || fullView) {
               gap: 1rem;
             }
           }
+
+          /* Dark mode styles for individual mode graph page */
+          :global(.app.dark) .two-graphs-row {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.8);
+          }
+          :global(.app.dark) .two-graphs-row :global(.shadow-md) {
+            background: #1e293b;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            color: #cbd5e1;
+          }
+          :global(.app.dark) .two-graphs-row :global(.shadow-md):hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.9);
+          }
+          :global(.app.dark) .two-graphs-row :global(.p-4) {
+            padding: 1.5rem !important;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #cbd5e1;
+          }
         `}</style>
         <div className="two-graphs-row">
           {[CtlrTemp1, CtlrTemp2, CtlrTemp, MtrTemp, AcCurrMeaRms, DcCurrEstd, DcBusVolt, MtrSpd, ThrotVolt, LimpHomeMode, EcoBoost, RegenMode, Forward, Reverse, Brake].map((GraphComp, idx) => (
