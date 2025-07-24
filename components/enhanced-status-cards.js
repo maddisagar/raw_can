@@ -579,6 +579,58 @@ export default function EnhancedStatusCards({ showOnlyStatusGroups = false, show
             font-size: 2.5rem;
           }
         }
+@media (max-height: 900px) {
+  .enhanced-status-cards {
+    gap: 1rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    max-height: 100vh;
+    overflow-y: auto;
+    grid-template-rows: auto auto 1fr;
+    padding-bottom: 0.5rem;
+  }
+  .status-groups {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+  .status-group {
+    padding: 0.5rem !important;
+    font-size: 0.95rem !important;
+    min-width: 0;
+  }
+  .group-header h4,
+  .section-header h3 {
+    font-size: 1rem !important;
+  }
+  .group-items {
+    gap: 0.4rem !important;
+  }
+  .sensor-health-section,
+  .temperature-section {
+    padding: 0.75rem !important;
+    font-size: 0.95rem !important;
+    max-height: 100vh;
+    overflow-y: auto;
+    margin-bottom: 0.5rem;
+  }
+  .sensor-grid,
+  .temp-grid {
+    grid-template-columns: repeat (2, 1fr) !important;
+    gap: 0.4rem !important;
+  }
+  .temp-card {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 1rem !important;
+  }
+  .temp-value .value {
+    font-size: 1.1rem !important;
+  }
+  .sensor-item {
+    padding: 0.3rem 0.5rem !important;
+    font-size: 0.8rem !important;
+  }
+}
       `}</style>
     </div>
   )
