@@ -207,7 +207,7 @@ export default function ReportsSection() {
               <div className="temp-title">Motor Temperature</div>
               <div className="temp-values">
                 <div>
-                  Min <strong>{reportData.temperatureStats.minMotorTemp !== null ? reportData.temperatureStats.minMotorTemp.toFixed(1) : "--"}°C</strong>
+                  Min <strong>{reportData.temperatureStats.minMotorTemp !== null && reportData.temperatureStats.minMotorTemp !== 0 ? reportData.temperatureStats.minMotorTemp.toFixed(1) : "--"}°C</strong>
                 </div>
                 <div>
                   Max <strong>{reportData.temperatureStats.maxMotorTemp !== null ? reportData.temperatureStats.maxMotorTemp.toFixed(1) : "--"}°C</strong>
@@ -223,7 +223,7 @@ export default function ReportsSection() {
               <div className="temp-title">Controller Temperature</div>
               <div className="temp-values">
                 <div>
-                  Min <strong>{reportData.temperatureStats.minControllerTemp !== null ? reportData.temperatureStats.minControllerTemp.toFixed(1) : "--"}°C</strong>
+                  Min <strong>{reportData.temperatureStats.minControllerTemp !== null && reportData.temperatureStats.minControllerTemp !== 0 ? reportData.temperatureStats.minControllerTemp.toFixed(1) : "--"}°C</strong>
                 </div>
                 <div>
                   Max <strong>{reportData.temperatureStats.maxControllerTemp !== null ? reportData.temperatureStats.maxControllerTemp.toFixed(1) : "--"}°C</strong>

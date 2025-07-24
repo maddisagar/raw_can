@@ -143,6 +143,12 @@ if (mode === "individual" || fullView) {
             justify-content: center;
             color: #cbd5e1;
           }
+
+          @media (min-width: 1500px) {
+          .two-graphs-row {
+              grid-template-columns: repeat(3, 1fr);
+            }
+          }
         `}</style>
         <div className="two-graphs-row">
           {[CtlrTemp1, CtlrTemp2, CtlrTemp, MtrTemp, AcCurrMeaRms, DcCurrEstd, DcBusVolt, MtrSpd, ThrotVolt, LimpHomeMode, EcoBoost, RegenMode, Forward, Reverse, Brake].map((GraphComp, idx) => (
@@ -159,7 +165,7 @@ if (mode === "individual" || fullView) {
 
   if (mode === "overlay") {
     // Rolling buffer for smooth overlay graph
-    const OVERLAY_BUFFER_SIZE = 300; // Number of points to display
+    const OVERLAY_BUFFER_SIZE = 1200; // Number of points to display
     const prepareOverlayData = () => {
       if (!history || history.length === 0 || selectedGraphs.length === 0) return [];
       // Only keep the last OVERLAY_BUFFER_SIZE points
