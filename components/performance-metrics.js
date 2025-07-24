@@ -409,7 +409,7 @@ export default function PerformanceMetrics() {
             font-size: 2.5rem;
           }
           .odometer-wrapper {
-            margin-top: 0rem;
+            margin-top: -2rem;
           }
           .metric-header h4 {
             font-size: 1.1rem;
@@ -439,6 +439,18 @@ export default function PerformanceMetrics() {
             min-height: 180px;
             box-sizing: border-box;
           }
+        }
+
+        @media (max-height: 780px) {
+          .metrics-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 0.5rem;
+          }
+          .odometer-wrapper {
+
+            scale: 0.8;
+            display: flex;
+      }
         }
       `}</style>
     </div>
