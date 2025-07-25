@@ -342,27 +342,60 @@ if (mode === "individual" || fullView) {
             .metric-button {
               width: 195px;
               padding: 0.5rem 1rem;
-        }
+            }
+          }
+
+          @media (max-width: 768px) {
+            .metric-button {
+              width: 100px;
+              font-size: 0.65rem;
+              padding: 0.15rem 0.6rem;
+              margin: 0.2rem;
+            }
+          }
+
+          @media (max-width: 480px) {
+            .metric-button {
+              width: 80px;
+              font-size: 0.6rem;
+              padding: 0.1rem 0.5rem;
+              margin: 0.15rem;
+            }
+          }
+
+          .metric-buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            max-width: 100%;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .overlay-chart-container {
+            width: 100%;
+            max-width: 100%;
+            height: 450px;
+            position: relative;
+            margin-top: 20px;
+          }
+
+          @media (max-width: 768px) {
+            .overlay-chart-container {
+              height: 350px;
+            }
+          }
+
+          @media (max-width: 480px) {
+            .overlay-chart-container {
+              height: 300px;
+            }
           }
         `}</style>
         <div className="flex flex-col items-center mb-4">
-          <div className="flex gap-2 mb-2">
-            {/* <button
-              className="metric-button"
-              style={{ background: '#22c55e', color: 'white', fontWeight: 700 }}
-              onClick={() => setSelectedGraphs(allMetrics.map(m => m.key))}
-            >
-              Select All
-            </button>
-            <button
-              className="metric-button"
-              style={{ background: '#ef4444', color: 'white', fontWeight: 700 }}
-              onClick={() => setSelectedGraphs([])}
-            >
-              Deselect All
-            </button> */}
-          </div>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="metric-buttons-container">
             {allMetrics.map((metric) => (
               <button
                 key={metric.key}
@@ -393,7 +426,7 @@ if (mode === "individual" || fullView) {
         {selectedGraphs.length > 0 ? (
           <Card className="shadow-md w-full max-w-5xl">
             <CardContent className="p-4">
-              <div style={{ width: "100%", height: 650, position: "relative", marginTop: 20 }}>
+              <div className="overlay-chart-container">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={overlayData} margin={{ top: 20, right: 30, left: 0, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#334155" : "#e5e7eb"} />
