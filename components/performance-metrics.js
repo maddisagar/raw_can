@@ -426,7 +426,7 @@ export default function PerformanceMetrics() {
 
           .metrics-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
+            gap: 1rem;
           }
 
           .overall-stats {
@@ -436,21 +436,20 @@ export default function PerformanceMetrics() {
 
           .metric-card {
             padding: 0rem 0.5rem;
-            min-height: 180px;
+            min-height: 140px;
             box-sizing: border-box;
           }
         }
 
-        @media (max-height: 780px) {
+        @media (max-height: 780px) and (min-width: 769px) {
           .metrics-grid {
             grid-template-columns: repeat(4, 1fr) !important;
             gap: 0.5rem;
           }
           .odometer-wrapper {
-
             scale: 0.8;
             display: flex;
-      }
+          }
         }
       `}</style>
     </div>

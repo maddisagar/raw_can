@@ -265,10 +265,14 @@ export const DataProvider = ({ children }) => {
     }
   }, [dailyReports])
 
+  // Debounced localStorage update for history to improve performance
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("canHistory", JSON.stringify(history))
-    }
+    if (typeof window === "undefined") return;
+    const handler = setTimeout(() => {
+      localStorage.setItem("canHistory", JSON.stringify(history));
+    }, 2000); // Save to localStorage at most once every 2 seconds
+
+    return () => clearTimeout(handler);
   }, [history])
 
   useEffect(() => {

@@ -579,7 +579,7 @@ export default function EnhancedStatusCards({ showOnlyStatusGroups = false, show
             font-size: 2.5rem;
           }
         }
-@media (max-height: 900px) {
+@media (max-height: 900px) and (min-width: 769px) {
   .enhanced-status-cards {
     gap: 1rem;
     margin-top: 2rem;
