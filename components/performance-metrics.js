@@ -439,6 +439,14 @@ export default function PerformanceMetrics() {
             min-height: 140px;
             box-sizing: border-box;
           }
+
+          .metric-value {
+            font-size: 1.5rem;
+          }
+
+          .metric-value .unit {
+            font-size: 0.8rem;
+          }
         }
 
         @media (max-height: 780px) and (min-width: 769px) {
